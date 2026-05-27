@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ComEd CHP Dashboard</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f2f1ec;--surface:#fff;--surface2:#f0efe9;--surface3:#e6e5df;
+  --text:#1a1a18;--text2:#5c5c58;--text3:#9a9a94;
+  --border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.15);
+  --green:#2a6b0d;--green-bg:#e8f3da;--green-mid:#3d9e18;
+  --amber:#7a4400;--amber-bg:#faebd6;
+  --red:#982020;--red-bg:#fce8e8;
+  --spike:#8a2c0e;--spike-bg:#faebe6;
+  --blue:#1350a0;--blue-bg:#e4f0fc;
+  --gray:#70706c;--gray-bg:#eeede8;
+  --radius:10px;--radius-lg:14px;--radius-xl:20px;
+  --shadow:0 1px 4px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05);
+  --shadow-lg:0 6px 24px rgba(0,0,0,.11),0 1px 4px rgba(0,0,0,.06);
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#111110;--surface:#1c1c1a;--surface2:#252523;--surface3:#2e2e2b;
+  --text:#f0efea;--text2:#9a9a96;--text3:#66665f;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.14);
+  --green:#8ecf52;--green-bg:rgba(142,207,82,.1);--green-mid:#6aad2e;
+  --amber:#f5be72;--amber-bg:rgba(245,190,114,.09);
+  --red:#f09090;--red-bg:rgba(240,144,144,.08);
+  --spike:#f5b49a;--spike-bg:rgba(245,180,154,.08);
+  --blue:#82b6f0;--blue-bg:rgba(130,182,240,.08);
+  --gray:#aeaea6;--gray-bg:rgba(174,174,166,.08);
+}}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.wrap{max-width:940px;margin:0 auto;padding:1.5rem 1rem 4rem}
+
+/* Header */
+.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;flex-wrap:wrap;gap:10px}
+.hdr-l .eye{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:3px}
+.hdr-l h1{font-size:22px;font-weight:800;color:var(--text)}
+.hdr-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.loc-pill{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:6px 13px;font-size:13px;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit}
+.loc-pill:hover{border-color:var(--blue);color:var(--blue)}
+.rtime{font-size:11px;color:var(--text3)}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;box-shadow:var(--shadow);transition:box-shadow .2s}
+.stat:hover{box-shadow:var(--shadow-lg)}
+.stat .lbl{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.stat .val{font-size:30px;font-weight:800;line-height:1;letter-spacing:-.5px}
+.stat .sub{font-size:11px;color:var(--text3);margin-top:4px}
+.risk-stat{border-left:3px solid var(--rc)}
+
+/* Price breakdown cards */
+.price-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+@media(max-width:520px){.price-grid{grid-template-columns:1fr}}
+.price-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;box-shadow:var(--shadow)}
+.price-card .pc-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.price-card .pc-title .badge{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:700}
+.price-row-item{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid var(--border);font-size:12px}
+.price-row-item:last-child{border-bottom:none;padding-top:8px;margin-top:2px}
+.price-row-item.total-row{font-weight:700;font-size:14px;border-top:1.5px solid var(--border2);border-bottom:none;margin-top:4px}
+.price-row-item .prl{color:var(--text2)}
+.price-row-item .prv{font-weight:600;color:var(--text)}
+.price-row-item.total-row .prv{font-size:18px;font-weight:800}
+.season-note{font-size:11px;color:var(--text3);margin-top:8px;padding-top:6px;border-top:0.5px solid var(--border)}
+
+/* Alert */
+.alert{display:none;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--radius-lg);margin-bottom:14px;font-size:13px;font-weight:700;animation:slideIn .3s ease}
+.alert.on{display:flex}
+@keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+
+/* Chart */
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:14px;box-shadow:var(--shadow)}
+.chart-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.chart-title{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+.chart-tabs{display:flex;gap:4px}
+.ctab{padding:4px 10px;font-size:11px;font-weight:700;border-radius:6px;border:1px solid var(--border2);background:none;color:var(--text3);cursor:pointer;transition:all .15s;font-family:inherit}
+.ctab.active{background:var(--text);color:var(--bg);border-color:transparent}
+.chart-body{display:flex;gap:8px}
+.y-axis{display:flex;flex-direction:column;justify-content:space-between;padding-bottom:28px;width:36px;flex-shrink:0}
+.y-tick{font-size:9px;color:var(--text3);text-align:right;line-height:1}
+.chart-right{flex:1;min-width:0;position:relative}
+.svg-wrap{width:100%;height:180px;display:block}
+.x-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--text3);padding-top:4px}
+.chart-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+.chart-legend span{font-size:11px;display:flex;align-items:center;gap:5px;color:var(--text2)}
+.chart-legend i{width:10px;height:10px;border-radius:2px;display:inline-block;flex-shrink:0}
+.price-note{font-size:10px;color:var(--text3);margin-top:6px}
+
+/* Section */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;margin-top:4px}
+.sec-title{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+.sec-btn{font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;transition:all .15s;font-family:inherit}
+.sec-btn:hover{border-color:var(--blue);color:var(--blue)}
+
+/* App cards */
+.apps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-bottom:14px}
+.app-card{border-radius:var(--radius-lg);padding:12px 14px;border:1px solid transparent;border-left-width:3px;transition:transform .15s,box-shadow .15s;position:relative}
+.app-card:hover{transform:translateY(-1px);box-shadow:var(--shadow-lg)}
+.app-top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:4px}
+.app-name{font-size:13px;font-weight:700;color:var(--text)}
+.app-badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:5px;white-space:nowrap}
+.app-detail{font-size:11px;color:var(--text3);margin-bottom:1px}
+.app-cost{font-size:10px;font-weight:600;margin-top:5px}
+.app-remove{position:absolute;top:8px;right:8px;opacity:0;font-size:16px;color:var(--text3);cursor:pointer;line-height:1;background:none;border:none;padding:2px 5px;border-radius:4px;transition:opacity .15s;font-family:inherit}
+.app-card:hover .app-remove{opacity:1}
+.app-remove:hover{color:var(--red)}
+
+/* Panel */
+.panel-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.tog-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.tog{padding:5px 12px;font-size:12px;font-weight:600;border-radius:20px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;transition:all .15s;user-select:none;font-family:inherit}
+.tog.on{border-color:var(--green-mid);background:var(--green-bg);color:var(--green)}
+.pbar-wrap{margin-top:10px}
+.pbar-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:3px}
+.pbar-track{height:10px;background:var(--surface2);border-radius:5px;position:relative}
+.pbar-fill{height:100%;border-radius:5px;transition:width .4s cubic-bezier(.34,1.4,.64,1),background .3s}
+.pbar-marker{position:absolute;top:-2px;left:80%;width:2px;height:14px;background:var(--amber);border-radius:1px;opacity:.8}
+.panel-result{margin-top:8px;padding:10px 14px;border-radius:var(--radius);font-size:13px;font-weight:700}
+
+/* Footer */
+.footer{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.footer a{font-size:12px;padding:6px 12px;border:1px solid var(--border2);border-radius:20px;color:var(--text2);text-decoration:none;transition:all .15s}
+.footer a:hover{border-color:var(--blue);color:var(--blue)}
+.footer .note{font-size:11px;color:var(--text3);margin-left:4px}
+
+/* Modals */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(3px)}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius-xl);padding:26px;width:100%;max-width:440px;box-shadow:var(--shadow-lg);animation:modalIn .25s ease;max-height:90vh;overflow-y:auto}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:none}}
+.modal h2{font-size:18px;font-weight:800;margin-bottom:3px}
+.modal .msub{font-size:13px;color:var(--text3);margin-bottom:20px}
+.modal label{font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:5px;margin-top:14px}
+.modal label:first-of-type{margin-top:0}
+.minput{width:100%;padding:10px 13px;font-size:14px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface2);color:var(--text);outline:none;font-family:inherit;transition:border-color .15s}
+.minput:focus{border-color:var(--blue)}
+.mnote{font-size:11px;color:var(--text3);margin-top:5px}
+.fav-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.fav-chip{display:flex;align-items:center;gap:5px;padding:5px 11px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s;user-select:none}
+.fav-chip:hover{border-color:var(--blue);color:var(--blue)}
+.fav-chip.active-fav{border-color:var(--blue);background:var(--blue-bg);color:var(--blue)}
+.fav-chip .del-x{color:var(--text3);font-size:13px;line-height:1;padding:0 1px;margin-left:1px}
+.fav-chip .del-x:hover{color:var(--red)}
+.mactions{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap}
+.btn{padding:10px 20px;border-radius:var(--radius);font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:opacity .15s,transform .1s}
+.btn:hover{opacity:.85}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--text);color:var(--bg)}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.btn-blue{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-bg)}
+
+/* Wizard */
+.wizard-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:300;display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(6px)}
+.wizard-overlay.open{display:flex}
+.wizard{background:var(--surface);border-radius:var(--radius-xl);width:100%;max-width:480px;box-shadow:var(--shadow-lg);overflow:hidden;animation:modalIn .3s ease}
+.wiz-step{display:none;padding:28px}
+.wiz-step.active{display:block}
+.wiz-prog{display:flex;gap:5px;margin-bottom:20px}
+.wiz-dot{height:4px;border-radius:2px;background:var(--surface3);flex:1;transition:background .3s}
+.wiz-dot.done{background:var(--blue)}
+.wiz-slabel{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
+.wiz-h{font-size:20px;font-weight:800;margin-bottom:4px}
+.wiz-sub{font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:0}
+.wiz-app-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;max-height:280px;overflow-y:auto}
+.wiz-ai{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--surface2);cursor:pointer;transition:all .15s;user-select:none}
+.wiz-ai.selected{border-color:var(--blue);background:var(--blue-bg)}
+.wiz-ai .wiz-icon{font-size:20px}
+.wiz-ai .wiz-aname{font-size:12px;font-weight:700;color:var(--text)}
+.wiz-ai .wiz-akw{font-size:10px;color:var(--text3)}
+.wiz-check{margin-left:auto;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;transition:all .15s}
+.wiz-ai.selected .wiz-check{background:var(--blue);border-color:var(--blue);color:#fff}
+.wiz-actions{display:flex;justify-content:space-between;align-items:center;margin-top:20px;gap:8px}
+.wiz-skip{font-size:12px;color:var(--text3);cursor:pointer;padding:4px 0;background:none;border:none;font-family:inherit}
+.wiz-skip:hover{color:var(--text2)}
+
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.fade-up{animation:fadeUp .35s ease both}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.pulsing{animation:pulse 1.5s infinite}
+
+/* SVG line chart */
+.svg-chart{overflow:visible}
+.lc-area{fill-opacity:.12}
+.lc-line{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.lc-dot{r:3;stroke-width:1.5}
+.lc-dot-curr{r:5;stroke-width:2}
+.chart-tooltip-dot{cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap" id="main-wrap">
+
+  <!-- Header -->
+  <div class="hdr fade-up">
+    <div class="hdr-l">
+      <div class="eye">ComEd Hourly Pricing · PJM Northern Illinois</div>
+      <h1>Appliance Decision Dashboard</h1>
+    </div>
+    <div class="hdr-r">
+      <button class="loc-pill" onclick="openLocModal()" id="loc-btn">📍 Loading…</button>
+      <div class="rtime" id="rtime"></div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats fade-up" id="stats-row">
+    <div class="stat"><div class="lbl">Current Price</div><div class="val pulsing" style="font-size:22px">—</div><div class="sub">Fetching…</div></div>
+    <div class="stat"><div class="lbl">Risk Level</div><div class="val" style="font-size:16px;padding-top:6px">—</div></div>
+    <div class="stat"><div class="lbl">Next Cheap Window</div><div class="val" style="font-size:18px;padding-top:4px">—</div></div>
+  </div>
+
+  <!-- Pricing breakdown -->
+  <div class="price-grid fade-up" id="price-grid" style="display:none">
+    <!-- filled by JS -->
+  </div>
+
+  <!-- Alert -->
+  <div class="alert" id="alert-bar"></div>
+
+  <!-- Chart -->
+  <div class="chart-card fade-up">
+    <div class="chart-hdr">
+      <div class="chart-title">Price History (¢/kWh)</div>
+      <div class="chart-tabs">
+        <button class="ctab active" onclick="switchChart('hourly',this)">Hourly Today</button>
+        <button class="ctab" onclick="switchChart('5min',this)">5-Min (24h)</button>
+      </div>
+    </div>
+    <div class="chart-body">
+      <div class="y-axis" id="y-axis"></div>
+      <div class="chart-right">
+        <div id="svg-container" style="width:100%;height:180px"></div>
+        <div class="x-labels" id="x-labels"></div>
+      </div>
+    </div>
+    <div class="chart-legend">
+      <span><i style="background:#185FA5"></i>Negative (free!)</span>
+      <span><i style="background:#2a6b0d"></i>&lt;8¢ low</span>
+      <span><i style="background:#7a4400"></i>8–14¢ medium</span>
+      <span><i style="background:#982020"></i>14–25¢ high</span>
+      <span><i style="background:#8a2c0e"></i>&gt;25¢ spike</span>
+    </div>
+    <div class="price-note" id="price-note"></div>
+  </div>
+
+  <!-- Appliances -->
+  <div class="sec-hdr fade-up">
+    <div class="sec-title">Run Now or Wait?</div>
+    <button class="sec-btn" onclick="openAddApp()">＋ Add Appliance</button>
+  </div>
+  <div class="apps-grid fade-up" id="apps-grid"></div>
+
+  <!-- Panel checker -->
+  <div class="panel-card fade-up">
+    <div class="sec-hdr" style="margin-bottom:10px">
+      <div class="sec-title">Panel Load Checker — 100A · 24 kW Max</div>
+    </div>
+    <div class="tog-row" id="tog-row"></div>
+    <div class="panel-result" id="panel-result">Select appliances above to check panel load</div>
+    <div class="pbar-wrap">
+      <div class="pbar-labels"><span>0 kW</span><span style="color:var(--amber)">19.2 kW safe limit</span><span>24 kW</span></div>
+      <div class="pbar-track"><div class="pbar-fill" id="pbar-fill" style="width:0%;background:var(--green)"></div><div class="pbar-marker"></div></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer fade-up">
+    <a href="https://hourlypricing.comed.com/live-prices/" target="_blank">Live Prices ↗</a>
+    <a href="https://hourlypricing.comed.com/live-prices/day-ahead-prices/" target="_blank">Tomorrow ↗</a>
+    <a href="https://hourlypricing.comed.com/live-prices/five-minute-prices/" target="_blank">5-Min Detail ↗</a>
+    <span class="note">Auto-refreshes every 5 min</span>
+  </div>
+</div>
+
+<!-- ─── LOCATION MODAL ─── -->
+<div class="overlay" id="loc-overlay">
+  <div class="modal">
+    <h2>📍 Your Location</h2>
+    <div class="msub">Used for display only — ComEd CHP prices are region-wide.</div>
+    <label>City Name</label>
+    <input class="minput" id="loc-city" placeholder="e.g. Aurora" maxlength="60"/>
+    <label>ZIP Code</label>
+    <input class="minput" id="loc-zip" placeholder="e.g. 60504" maxlength="10" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)"/>
+    <div class="mnote">Favorites are saved to your browser.</div>
+    <div style="margin-top:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px">⭐ Saved Locations</div>
+      <div class="fav-chips" id="fav-chips"></div>
+    </div>
+    <div class="mactions">
+      <button class="btn btn-primary" onclick="saveLocation()">Save Location</button>
+      <button class="btn btn-blue" onclick="saveAsFav()">＋ Save as Favorite</button>
+      <button class="btn btn-ghost" onclick="closeLocModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── ADD APPLIANCE MODAL ─── -->
+<div class="overlay" id="add-app-overlay">
+  <div class="modal">
+    <h2>＋ Add Appliance</h2>
+    <div class="msub">Pick from the library or add a custom one.</div>
+    <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">Quick add from library</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px" id="quick-add-chips"></div>
+    <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px">Or enter custom appliance</div>
+    <label>Icon (emoji)</label>
+    <input class="minput" id="new-icon" placeholder="🔌" maxlength="4" style="width:72px"/>
+    <label>Name</label>
+    <input class="minput" id="new-name" placeholder="e.g. Pool Pump"/>
+    <label>Power (kW)</label>
+    <input class="minput" id="new-kw" type="number" step="0.1" min="0.01" max="50" placeholder="e.g. 1.5" style="width:120px"/>
+    <label>Shiftable? (can you choose when to run it?)</label>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="tog on" id="shift-yes" onclick="setShift(true)">✓ Yes — flexible</button>
+      <button class="tog" id="shift-no" onclick="setShift(false)">✗ Always on</button>
+    </div>
+    <label>Best window</label>
+    <input class="minput" id="new-best" placeholder="e.g. 11 PM – 6 AM"/>
+    <label>Tip</label>
+    <input class="minput" id="new-note" placeholder="e.g. Run overnight for best rates"/>
+    <div class="mactions">
+      <button class="btn btn-primary" onclick="addCustomApp()">Add Appliance</button>
+      <button class="btn btn-ghost" onclick="closeAddApp()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── WIZARD ─── -->
+<div class="wizard-overlay" id="wizard-overlay">
+  <div class="wizard">
+    <!-- Step 1 -->
+    <div class="wiz-step active" id="wiz-1">
+      <div class="wiz-prog"><div class="wiz-dot done"></div><div class="wiz-dot"></div><div class="wiz-dot"></div></div>
+      <div class="wiz-slabel">Step 1 of 3</div>
+      <div class="wiz-h">👋 Welcome!</div>
+      <div class="wiz-sub" style="margin-bottom:18px">This dashboard shows live ComEd hourly prices and tells you the best time to run each appliance. Let's get you set up in 60 seconds.</div>
+      <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:5px">Your City</label>
+      <input class="minput" id="wiz-city" placeholder="e.g. Aurora" maxlength="60"/>
+      <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:5px;margin-top:12px">ZIP Code</label>
+      <input class="minput" id="wiz-zip" placeholder="e.g. 60504" maxlength="10" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)"/>
+      <div class="mnote" style="margin-top:6px">Prices are the same across the ComEd service area — your location is for display only.</div>
+      <div class="wiz-actions">
+        <button class="wiz-skip" onclick="skipWizard()">Skip setup</button>
+        <button class="btn btn-primary" onclick="wizNext(1)">Next →</button>
+      </div>
+    </div>
+    <!-- Step 2 -->
+    <div class="wiz-step" id="wiz-2">
+      <div class="wiz-prog"><div class="wiz-dot done"></div><div class="wiz-dot done"></div><div class="wiz-dot"></div></div>
+      <div class="wiz-slabel">Step 2 of 3</div>
+      <div class="wiz-h">🔌 Your Appliances</div>
+      <div class="wiz-sub">Select everything in your home. You can add or remove more later.</div>
+      <div class="wiz-app-grid" id="wiz-app-grid"></div>
+      <div class="wiz-actions">
+        <button class="wiz-skip" onclick="wizBack(2)">← Back</button>
+        <button class="btn btn-primary" onclick="wizNext(2)">Next →</button>
+      </div>
+    </div>
+    <!-- Step 3 -->
+    <div class="wiz-step" id="wiz-3">
+      <div class="wiz-prog"><div class="wiz-dot done"></div><div class="wiz-dot done"></div><div class="wiz-dot done"></div></div>
+      <div class="wiz-slabel">Step 3 of 3</div>
+      <div class="wiz-h">🎉 All set!</div>
+      <div class="wiz-sub" style="margin-bottom:16px">Here's what each color means:</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:4px">
+        <div style="display:flex;gap:12px;align-items:flex-start;padding:11px;background:var(--surface2);border-radius:var(--radius)">
+          <div style="font-size:20px">🟢</div><div><div style="font-size:13px;font-weight:700">Green = Run now</div><div style="font-size:12px;color:var(--text3)">Price under 8¢ — great time for EV, dryer, water heater.</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;padding:11px;background:var(--surface2);border-radius:var(--radius)">
+          <div style="font-size:20px">🟡</div><div><div style="font-size:13px;font-weight:700">Amber = OK if urgent</div><div style="font-size:12px;color:var(--text3)">8–14¢ — moderate pricing, shift if you can.</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;padding:11px;background:var(--surface2);border-radius:var(--radius)">
+          <div style="font-size:20px">🔴</div><div><div style="font-size:13px;font-weight:700">Red / Spike = Pause large loads</div><div style="font-size:12px;color:var(--text3)">14¢+ — defer EV, dryer, water heater until overnight.</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;padding:11px;background:var(--surface2);border-radius:var(--radius)">
+          <div style="font-size:20px">🔔</div><div><div style="font-size:13px;font-weight:700">Sign up for price alerts</div><div style="font-size:12px;color:var(--text3)">ComEd texts you by 5 PM for next day. <a href="https://hourlypricing.comed.com" target="_blank" style="color:var(--blue)">hourlypricing.comed.com</a></div></div>
+        </div>
+      </div>
+      <div class="wiz-actions" style="justify-content:flex-end">
+        <button class="btn btn-primary" onclick="finishWizard()">Go to Dashboard →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════
+// STATE
+// ══════════════════════════════════
+var _price    = null;
+var _fiveMin  = [];
+var _hourly   = [];
+var _chartMode= 'hourly';
+var _panelOn  = new Set(['fridge','hvac','lights']);
+var _newShift = true;
+var _isSummer = false; // June–September
+
+// ── Appliance library ──
+var APP_LIBRARY = [
+  {id:'tesla',   icon:'🔋', name:'Tesla / EV',      kw:11.5, shift:true,  best:'12–6 AM',         note:'Use scheduled charging in Tesla app'},
+  {id:'dryer',   icon:'🌀', name:'Dryer',            kw:5.0,  shift:true,  best:'11 PM–6 AM',      note:'Pair with washer; run overnight'},
+  {id:'wh',      icon:'🚿', name:'Water Heater',     kw:4.5,  shift:true,  best:'12–5 AM',         note:'Install smart controller for auto scheduling'},
+  {id:'hvac',    icon:'❄️', name:'HVAC / AC',        kw:4.5,  shift:true,  best:'Pre-cool 6–10 AM',note:'Raise setpoint to 76°F at 2 PM'},
+  {id:'oven',    icon:'🍳', name:'Electric Oven',    kw:2.4,  shift:true,  best:'Before 2 PM',     note:'Use gas burners 2–8 PM instead'},
+  {id:'hair',    icon:'💨', name:'Hair Dryer',       kw:1.6,  shift:false, best:'7–9 AM',          note:'Short use — unavoidable'},
+  {id:'washer',  icon:'👕', name:'Washer',           kw:0.5,  shift:true,  best:'11 PM–6 AM',      note:'Pair with dryer overnight'},
+  {id:'fridge',  icon:'🧊', name:'Refrigerator',     kw:0.15, shift:false, best:'Always on',       note:'No action — always running'},
+  {id:'lights',  icon:'💡', name:'LED Lights',       kw:0.15, shift:true,  best:'After 8 PM',      note:'Dim non-essential lights 4–8 PM'},
+  {id:'pool',    icon:'🏊', name:'Pool Pump',        kw:1.5,  shift:true,  best:'12–6 AM',         note:'Program timer to overnight window'},
+  {id:'dish',    icon:'🍽️', name:'Dishwasher',      kw:1.8,  shift:true,  best:'11 PM–6 AM',      note:'Use delay start feature'},
+  {id:'hotub',   icon:'♨️', name:'Hot Tub / Spa',   kw:3.5,  shift:true,  best:'12–5 AM',         note:'Pre-heat overnight; cover during peak'},
+  {id:'garage',  icon:'🚗', name:'Garage Heater',    kw:2.0,  shift:true,  best:'6–8 AM',          note:'Pre-heat before peak; off 2–8 PM'},
+  {id:'desktop', icon:'🖥️', name:'Desktop PC',      kw:0.3,  shift:false, best:'Anytime',         note:'Minimal impact; use power-save mode'},
+];
+
+// ══════════════════════════════════
+// LOCAL STORAGE
+// ══════════════════════════════════
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function getLocation()   {return lsGet('comed_loc',{city:'Aurora',zip:'60504'});}
+function setLocation(l)  {lsSet('comed_loc',l);}
+function getFavs()       {return lsGet('comed_favs',[{city:'Aurora',zip:'60504'}]);}
+function setFavs(f)      {lsSet('comed_favs',f);}
+function getUserApps()   {return lsGet('comed_apps',['tesla','dryer','wh','hvac','washer','fridge','lights']);}
+function setUserApps(a)  {lsSet('comed_apps',a);}
+function getCustomApps() {return lsGet('comed_custom_apps',[]);}
+function setCustomApps(a){lsSet('comed_custom_apps',a);}
+function hasOnboarded()  {return lsGet('comed_onboarded',false);}
+function setOnboarded()  {lsSet('comed_onboarded',true);}
+function getAllApps()     {return APP_LIBRARY.concat(getCustomApps());}
+function getActiveApps() {
+  var ids=getUserApps(), all=getAllApps(), result=[];
+  ids.forEach(function(id){var a=all.find(function(x){return x.id===id;});if(a)result.push(a);});
+  return result;
+}
+
+// ══════════════════════════════════
+// RATE MATH
+// ══════════════════════════════════
+function getDeliveryAdder() {
+  // PJM summer rate = June 1 through September 30 (calendar-exact)
+  var now = new Date();
+  var m = now.getMonth(); // 0-indexed
+  var d = now.getDate();
+  // Summer starts Jun 1 (m===5, d>=1) and ends Sep 30 (m===8, d<=30)
+  _isSummer = (m > 5 && m < 8) ||          // July, August always summer
+              (m === 5 && d >= 1)  ||       // June 1 onward
+              (m === 8 && d <= 30);         // through Sep 30
+  // Non-summer: transmission 1.82 + delivery 6.23 + taxes ~1.95 ≈ 10.0¢
+  // Summer:     transmission 1.82 + delivery 7.60 + taxes ~2.08 ≈ 11.5¢
+  return _isSummer ? 11.5 : 10.0;
+}
+
+function getAllInPrice(supplyPrice) {
+  if (supplyPrice === null) return null;
+  return Math.round((supplyPrice + getDeliveryAdder()) * 10) / 10;
+}
+
+// ══════════════════════════════════
+// RISK / DECISION (based on supply price)
+// ══════════════════════════════════
+function getRisk(p) {
+  if (p===null)  return {l:'unknown', label:'No data',          color:'var(--gray)', bg:'var(--gray-bg)'};
+  if (p<0)       return {l:'negative',label:'FREE — negative!', color:'var(--blue)', bg:'var(--blue-bg)'};
+  if (p<8)       return {l:'low',     label:'Low — great time', color:'var(--green)',bg:'var(--green-bg)'};
+  if (p<14)      return {l:'med',     label:'Medium — OK',      color:'var(--amber)',bg:'var(--amber-bg)'};
+  if (p<25)      return {l:'high',    label:'High — defer',     color:'var(--red)',  bg:'var(--red-bg)'};
+  return                {l:'spike',   label:'⚠ SPIKE — pause!', color:'var(--spike)',bg:'var(--spike-bg)'};
+}
+function getDecision(app,price) {
+  if (!app.shift)     return {go:'Always on',  color:'var(--gray)', bg:'var(--gray-bg)'};
+  if (price===null)   return {go:'No data',    color:'var(--gray)', bg:'var(--gray-bg)'};
+  var r=getRisk(price);
+  if (r.l==='negative'||r.l==='low') return {go:'✓ Run now',  color:'var(--green)',bg:'var(--green-bg)'};
+  if (r.l==='med')                   return {go:'⚡ If urgent',color:'var(--amber)',bg:'var(--amber-bg)'};
+  return                                    {go:'✗ Defer',     color:'var(--red)',  bg:'var(--red-bg)'};
+}
+
+// ══════════════════════════════════
+// LOCATION
+// ══════════════════════════════════
+function renderLocLabel() {
+  var l=getLocation();
+  var btn=document.getElementById('loc-btn');
+  if (btn) btn.innerHTML='📍 '+l.city+(l.zip?' '+l.zip:'');
+}
+function openLocModal() {
+  var l=getLocation();
+  document.getElementById('loc-city').value=l.city;
+  document.getElementById('loc-zip').value=l.zip;
+  renderFavChips();
+  document.getElementById('loc-overlay').classList.add('open');
+}
+function closeLocModal(){document.getElementById('loc-overlay').classList.remove('open');}
+function saveLocation() {
+  var city=document.getElementById('loc-city').value.trim()||'My Location';
+  var zip=document.getElementById('loc-zip').value.trim()||'';
+  setLocation({city:city,zip:zip});
+  renderLocLabel();
+  closeLocModal();
+}
+function saveAsFav() {
+  var city=document.getElementById('loc-city').value.trim()||'My Location';
+  var zip=document.getElementById('loc-zip').value.trim()||'';
+  var favs=getFavs();
+  if (!favs.find(function(f){return f.city===city&&f.zip===zip;})){favs.push({city:city,zip:zip});setFavs(favs);}
+  setLocation({city:city,zip:zip});
+  renderLocLabel();
+  renderFavChips();
+}
+function deleteFav(idx){var favs=getFavs();favs.splice(idx,1);setFavs(favs);renderFavChips();}
+function loadFav(city,zip){document.getElementById('loc-city').value=city;document.getElementById('loc-zip').value=zip;}
+function renderFavChips() {
+  var favs=getFavs(),cur=getLocation(),html='';
+  favs.forEach(function(f,i){
+    var active=f.city===cur.city&&f.zip===cur.zip?' active-fav':'';
+    html+='<div class="fav-chip'+active+'" onclick="loadFav(\''+f.city.replace(/'/g,"\\'")+'\',' +'\''+f.zip+'\')">⭐ '+f.city+(f.zip?' '+f.zip:'')+
+      '<span class="del-x" onclick="event.stopPropagation();deleteFav('+i+')" title="Remove">×</span></div>';
+  });
+  var el=document.getElementById('fav-chips');
+  if (el) el.innerHTML=html||'<div style="font-size:12px;color:var(--text3)">None saved yet</div>';
+}
+
+// ══════════════════════════════════
+// STATS + PRICING BREAKDOWN
+// ══════════════════════════════════
+function nowCT() {
+  return parseInt(new Date().toLocaleString('en-US',{hour:'numeric',hour12:false,timeZone:'America/Chicago'}).replace('24','0'));
+}
+function hLabel(h) {
+  if (h===0) return '12 AM'; if (h===12) return '12 PM';
+  return h<12 ? h+' AM' : (h-12)+' PM';
+}
+
+function renderStats(price, hourly) {
+  var r=getRisk(price);
+  var ch=nowCT();
+  var future=hourly.filter(function(x){return x.h>ch&&x.p!==null;});
+  var cheap=future.length?future.reduce(function(a,b){return a.p<b.p?a:b;}):null;
+  var allin=getAllInPrice(price);
+  var now=new Date();
+  var html='';
+  // Supply price
+  html+='<div class="stat fade-up"><div class="lbl">Supply Price</div>'+
+    '<div class="val" style="color:'+r.color+'">'+(price!==null?price.toFixed(1)+'¢':'—')+'</div>'+
+    '<div class="sub">PJM real-time market · ¢/kWh</div></div>';
+  // All-in price
+  html+='<div class="stat fade-up" style="border-left:3px solid '+(allin!==null?r.color:'var(--gray)')+'">'+
+    '<div class="lbl">All-In Price</div>'+
+    '<div class="val" style="color:'+(allin!==null?r.color:'var(--gray)')+';font-size:26px">'+(allin!==null?allin.toFixed(1)+'¢':'—')+'</div>'+
+    '<div class="sub">incl. delivery + taxes</div></div>';
+  // Risk
+  html+='<div class="stat risk-stat fade-up" style="--rc:'+r.color+';background:'+r.bg+'">'+
+    '<div class="lbl">Risk Level</div>'+
+    '<div class="val" style="color:'+r.color+';font-size:15px;padding-top:6px">'+r.label+'</div>'+
+    '<div class="sub">'+getPOD(ch)+' · hour '+ch+':00</div></div>';
+  // Next cheap
+  html+='<div class="stat fade-up"><div class="lbl">Next Cheap Window</div>'+
+    '<div class="val" style="color:var(--green);font-size:18px;padding-top:4px">'+(cheap?hLabel(cheap.h):'12 AM')+'</div>'+
+    '<div class="sub">'+(cheap?cheap.p.toFixed(1)+'¢/kWh supply · ~'+(cheap.p+getDeliveryAdder()).toFixed(1)+'¢ all-in':'overnight off-peak')+'</div></div>';
+  document.getElementById('stats-row').innerHTML=html;
+
+  // Refresh time
+  document.getElementById('rtime').textContent='Updated '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:'America/Chicago'});
+
+  // Price breakdown cards
+  renderPriceBreakdown(price);
+
+  // Alert
+  var ab=document.getElementById('alert-bar');
+  // Capacity risk: PJM peak hours = summer (Jun–Sep), weekdays, 2–6 PM CT
+  var ch2=nowCT();
+  var dow=new Date().getDay(); // 0=Sun,6=Sat
+  var isWeekday=(dow>=1&&dow<=5);
+  var isCapacityRisk=_isSummer&&isWeekday&&(ch2>=14&&ch2<18);
+  if (r.l==='spike') {
+    ab.style.background=r.bg;ab.style.color=r.color;
+    ab.innerHTML='⚠️ <strong>PJM price spike!</strong> Pause Tesla, dryer, water heater & AC now. Supply: '+price.toFixed(1)+'¢ · All-in: ~'+(allin||0).toFixed(1)+'¢/kWh';
+    ab.classList.add('on');
+  } else if (r.l==='negative') {
+    ab.style.background=r.bg;ab.style.color=r.color;
+    ab.innerHTML='🎉 <strong>Negative PJM price — you\'re being paid to use electricity!</strong> Supply: '+price.toFixed(1)+'¢/kWh. Run everything you can right now.';
+    ab.classList.add('on');
+  } else if (isCapacityRisk) {
+    ab.style.background='var(--spike-bg)';ab.style.color='var(--spike)';
+    ab.innerHTML='🔴 <strong>PJM Capacity Risk Window (2–6 PM, summer weekday).</strong> Your monthly capacity charge is set by your 5 highest peak-hour draws of the summer. Minimize ALL large loads right now — especially HVAC, Tesla, dryer, and water heater. Every kW you avoid now could lower your bill for the entire year.';
+    ab.classList.add('on');
+  } else {ab.classList.remove('on');}
+}
+
+function renderPriceBreakdown(supplyPrice) {
+  var grid=document.getElementById('price-grid');
+  if (!grid) return;
+  if (supplyPrice===null){grid.style.display='none';return;}
+  grid.style.display='grid';
+  var adder=getDeliveryAdder();
+  var allin=supplyPrice+adder;
+  var m=new Date().getMonth();
+  var delivCharge=_isSummer?7.60:6.23;
+  var taxEst=_isSummer?2.08:1.95;
+  // Card 1: supply breakdown
+  var c1='<div class="price-card">'+
+    '<div class="pc-title">⚡ Supply Price Breakdown <span class="badge" style="background:var(--blue-bg);color:var(--blue)">PJM N.I. Hub</span></div>'+
+    '<div class="price-row-item"><span class="prl">ComEd hourly supply</span><span class="prv">'+supplyPrice.toFixed(1)+'¢/kWh</span></div>'+
+    '<div class="price-row-item total-row"><span class="prl">Supply price</span><span class="prv" style="color:var(--blue)">'+supplyPrice.toFixed(1)+'¢</span></div>'+
+    '<div class="season-note">Live PJM real-time market price for the ComEd / Northern Illinois zone. Changes every 5 min; hourly average is what you are billed.</div>'+
+  '</div>';
+  // Card 2: all-in breakdown
+  var r=getRisk(supplyPrice);
+  var ch2=nowCT();
+  var dow=new Date().getDay();
+  var isWeekday=(dow>=1&&dow<=5);
+  var isCapRisk=_isSummer&&isWeekday&&(ch2>=14&&ch2<18);
+  var capRiskRow=isCapRisk
+    ?'<div class="price-row-item" style="background:var(--spike-bg);border-radius:6px;padding:6px 8px;margin:4px 0;border:none"><span class="prl" style="color:var(--spike);font-weight:700">⚠ PJM Capacity Risk NOW</span><span class="prv" style="color:var(--spike)">Shed load!</span></div>'
+    :'';
+  var c2='<div class="price-card">'+
+    '<div class="pc-title">💳 All-In Rate Breakdown <span class="badge" style="background:'+r.bg+';color:'+r.color+'">'+(allin).toFixed(1)+'¢/kWh</span></div>'+
+    capRiskRow+
+    '<div class="price-row-item"><span class="prl">Supply (PJM market)</span><span class="prv">'+supplyPrice.toFixed(1)+'¢</span></div>'+
+    '<div class="price-row-item"><span class="prl">Transmission services</span><span class="prv">1.82¢</span></div>'+
+    '<div class="price-row-item"><span class="prl">Delivery infrastructure</span><span class="prv">'+delivCharge.toFixed(2)+'¢ '+(m>=5&&m<=8?'(Jun–Sep rate)':'(Oct–May rate)')+'</span></div>'+
+    '<div class="price-row-item"><span class="prl">Taxes &amp; environmental</span><span class="prv">~'+taxEst.toFixed(2)+'¢</span></div>'+
+    '<div class="price-row-item total-row"><span class="prl">Total all-in</span><span class="prv" style="color:'+r.color+'">~'+allin.toFixed(1)+'¢/kWh</span></div>'+
+    '<div class="season-note">'+(m>=5&&m<=8
+      ?'☀️ <strong>Summer (Jun 1–Sep 30):</strong> +11–12¢ adder. Capacity charge also applies — your monthly charge is set by your 5 highest peak-hour draws (PJM, summer weekday afternoons). Prices auto-switch Oct 1.'
+      :'❄️ <strong>Non-summer (Oct 1–May 31):</strong> +9.5–10.5¢ adder. Lower delivery fee. Prices auto-switch Jun 1.')+'</div>'+
+  '</div>';
+  grid.innerHTML=c1+c2;
+}
+
+function getPOD(h){if(h<12)return 'morning';if(h<17)return 'afternoon';return 'evening';}
+
+// ══════════════════════════════════
+// LINE CHART (SVG)
+// ══════════════════════════════════
+function switchChart(mode,btn) {
+  _chartMode=mode;
+  document.querySelectorAll('.ctab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  renderChart();
+}
+
+function lineColor(p) {
+  if (p<0)  return '#185FA5';
+  if (p<8)  return '#2a6b0d';
+  if (p<14) return '#7a4400';
+  if (p<25) return '#982020';
+  return '#8a2c0e';
+}
+
+function renderChart() {
+  var container=document.getElementById('svg-container');
+  var yAxisEl=document.getElementById('y-axis');
+  var xlabels=document.getElementById('x-labels');
+  var noteEl=document.getElementById('price-note');
+  var ch=nowCT();
+
+  var data=[];
+  var isHourly=(_chartMode==='hourly');
+
+  if (isHourly) {
+    _hourly.forEach(function(d){if(d.p!==null)data.push({x:d.h,p:d.p,label:hLabel(d.h),isCurr:d.h===ch,partial:d.partial});});
+    noteEl.textContent='Hourly averages from PJM real-time 5-min feed via ComEd CHP API. Current hour patched with currenthouraverage endpoint (matches ComEd website). Hover dots for exact value.';
+    xlabels.innerHTML='<span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>11 PM</span>';
+  } else {
+    var rev=_fiveMin.slice().reverse();
+    rev.forEach(function(d,i){
+      var p=parseFloat(d.price);
+      var dt=new Date(parseInt(d.millisUTC));
+      var lbl=dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:'America/Chicago'});
+      data.push({x:i,p:p,label:lbl,isRecent:i>=rev.length-12});
+    });
+    noteEl.textContent='Last 24 hours of 5-minute prices from ComEd API. Hover points for time + value.';
+    xlabels.innerHTML='<span>24h ago</span><span>18h ago</span><span>12h ago</span><span>6h ago</span><span>now</span>';
+  }
+
+  if (!data.length) {
+    container.innerHTML='<div style="color:var(--text3);font-size:13px;padding:1rem">Waiting for data…</div>';
+    yAxisEl.innerHTML='';
+    return;
+  }
+
+  var W=container.clientWidth||600, H=180;
+  var PAD={top:14,right:12,bottom:8,left:4};
+  var chartW=W-PAD.left-PAD.right, chartH=H-PAD.top-PAD.bottom;
+
+  var prices=data.map(function(d){return d.p;});
+  var maxP=Math.max.apply(null,prices.concat([8]));
+  var minP=Math.min.apply(null,prices.concat([0]));
+  var range=maxP-minP; if(range<1)range=1;
+  var n=data.length;
+
+  function px(i){return PAD.left+(i/(n>1?n-1:1))*chartW;}
+  function py(p){return PAD.top+chartH-(((p-minP)/range)*chartH);}
+
+  // Y-axis ticks (5 ticks)
+  var tickCount=5, yHTML='';
+  for(var ti=tickCount;ti>=0;ti--){
+    var tv=minP+(maxP-minP)*ti/tickCount;
+    yHTML+='<div class="y-tick">'+tv.toFixed(1)+'¢</div>';
+  }
+  yAxisEl.innerHTML=yHTML;
+
+  // Build SVG
+  var svg='<svg width="'+W+'" height="'+H+'" class="svg-chart" xmlns="http://www.w3.org/2000/svg">';
+
+  // Grid lines
+  for(var gi=0;gi<=tickCount;gi++){
+    var gy=PAD.top+chartH-(gi/tickCount)*chartH;
+    svg+='<line x1="'+PAD.left+'" y1="'+gy.toFixed(1)+'" x2="'+(W-PAD.right)+'" y2="'+gy.toFixed(1)+'" stroke="var(--border)" stroke-width="'+(gi===0||gi===tickCount?1:0.5)+'"/>';
+  }
+
+  // Zero line (if negative prices exist)
+  if (minP<0) {
+    var zy=py(0);
+    svg+='<line x1="'+PAD.left+'" y1="'+zy.toFixed(1)+'" x2="'+(W-PAD.right)+'" y2="'+zy.toFixed(1)+'" stroke="var(--border2)" stroke-width="1.5" stroke-dasharray="4,3"/>';
+  }
+
+  // Gradient fill area — segment by color
+  // Build path
+  var areaPath='M '+px(0).toFixed(1)+' '+py(data[0].p).toFixed(1);
+  for(var ai=1;ai<n;ai++) areaPath+=' L '+px(ai).toFixed(1)+' '+py(data[ai].p).toFixed(1);
+  var zeroY=Math.min(py(0),PAD.top+chartH);
+  areaPath+=' L '+px(n-1).toFixed(1)+' '+zeroY.toFixed(1)+' L '+px(0).toFixed(1)+' '+zeroY.toFixed(1)+' Z';
+
+  // Pick dominant color for gradient
+  var midP=prices[Math.floor(n/2)];
+  var gradCol=lineColor(midP);
+  var gradId='lcg'+Date.now();
+  svg+='<defs><linearGradient id="'+gradId+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+gradCol+'" stop-opacity="0.18"/><stop offset="100%" stop-color="'+gradCol+'" stop-opacity="0.01"/></linearGradient></defs>';
+  svg+='<path d="'+areaPath+'" fill="url(#'+gradId+')" />';
+
+  // Line — segment by color change
+  for(var li=0;li<n-1;li++){
+    var col=lineColor(data[li].p);
+    var op=(!isHourly&&!data[li].isRecent)?0.4:1;
+    svg+='<line x1="'+px(li).toFixed(1)+'" y1="'+py(data[li].p).toFixed(1)+'" x2="'+px(li+1).toFixed(1)+'" y2="'+py(data[li+1].p).toFixed(1)+'" stroke="'+col+'" stroke-width="2" stroke-linecap="round" opacity="'+op+'"/>';
+  }
+
+  // Dots + tooltips
+  var SKIP=isHourly?1:Math.max(1,Math.floor(n/48)); // show ~48 dots max for 5-min
+  for(var di=0;di<n;di+=SKIP){
+    var d=data[di];
+    var col2=lineColor(d.p);
+    var isCurr=isHourly&&d.isCurr;
+    var r2=isCurr?5:3;
+    var sw=isCurr?2:1.5;
+    var op2=(!isHourly&&!d.isRecent)?0.45:1;
+    var tip=d.label+': '+d.p.toFixed(1)+'¢'+(d.partial?' (in progress)':'');
+    svg+='<circle cx="'+px(di).toFixed(1)+'" cy="'+py(d.p).toFixed(1)+'" r="'+r2+'" fill="'+col2+'" stroke="var(--surface)" stroke-width="'+sw+'" opacity="'+op2+'" class="chart-tooltip-dot"><title>'+tip+'</title></circle>';
+  }
+  // Always show last dot
+  if (n>0) {
+    var last=data[n-1], lc=lineColor(last.p);
+    svg+='<circle cx="'+px(n-1).toFixed(1)+'" cy="'+py(last.p).toFixed(1)+'" r="5" fill="'+lc+'" stroke="var(--surface)" stroke-width="2"><title>'+last.label+': '+last.p.toFixed(1)+'¢'+(last.partial?' (in progress)':'')+'</title></circle>';
+  }
+
+  svg+='</svg>';
+  container.innerHTML=svg;
+}
+
+// ══════════════════════════════════
+// APPLIANCES
+// ══════════════════════════════════
+function renderAppliances(price) {
+  var grid=document.getElementById('apps-grid');
+  var apps=getActiveApps();
+  var html='';
+  var adder=getDeliveryAdder();
+  apps.forEach(function(app){
+    var d=getDecision(app,price);
+    var costPerHr=(price!==null&&app.kw)?Math.abs(app.kw*price/100):null;
+    var allinCost=(price!==null&&app.kw)?Math.abs(app.kw*(price+adder)/100):null;
+    var isEarning=price!==null&&price<0;
+    var costStr=costPerHr!==null
+      ?(isEarning?'⬇ Earning ':'')+'$'+costPerHr.toFixed(4)+'/hr supply · $'+(allinCost||0).toFixed(4)+'/hr all-in'
+      :app.kw+' kW';
+    html+='<div class="app-card" style="border-color:'+d.color+'3a;border-left-color:'+d.color+';background:'+d.bg+'">'+
+      '<button class="app-remove" onclick="removeApp(\''+app.id+'\')" title="Remove">×</button>'+
+      '<div class="app-top">'+
+        '<div class="app-name">'+app.icon+' '+app.name+'</div>'+
+        '<span class="app-badge" style="color:'+d.color+';background:'+d.color+'22">'+d.go+'</span>'+
+      '</div>'+
+      '<div class="app-detail">Best: '+app.best+'</div>'+
+      '<div class="app-detail" style="color:var(--text3)">'+app.note+'</div>'+
+      '<div class="app-cost" style="color:'+d.color+'">'+costStr+'</div>'+
+    '</div>';
+  });
+  if (!apps.length) html='<div style="color:var(--text3);font-size:13px;padding:.5rem">No appliances added. Click "+ Add Appliance" to get started.</div>';
+  grid.innerHTML=html;
+}
+
+function removeApp(id) {
+  var ids=getUserApps().filter(function(x){return x!==id;});
+  setUserApps(ids);
+  renderAppliances(_price);
+  rebuildPanelToggles();
+}
+
+// ── Add appliance modal ──
+function openAddApp() {
+  var active=getUserApps(), html='';
+  APP_LIBRARY.forEach(function(a){
+    if (active.indexOf(a.id)===-1)
+      html+='<div class="fav-chip" onclick="quickAddApp(\''+a.id+'\')">'+a.icon+' '+a.name+' ('+a.kw+'kW)</div>';
+  });
+  document.getElementById('quick-add-chips').innerHTML=html||'<div style="font-size:12px;color:var(--text3)">All library appliances already added.</div>';
+  ['new-icon','new-name','new-kw','new-best','new-note'].forEach(function(id){document.getElementById(id).value='';});
+  _newShift=true;
+  document.getElementById('shift-yes').classList.add('on');
+  document.getElementById('shift-no').classList.remove('on');
+  document.getElementById('add-app-overlay').classList.add('open');
+}
+function closeAddApp(){document.getElementById('add-app-overlay').classList.remove('open');}
+function quickAddApp(id) {
+  var ids=getUserApps();
+  if (ids.indexOf(id)===-1) ids.push(id);
+  setUserApps(ids);
+  renderAppliances(_price);
+  rebuildPanelToggles();
+  closeAddApp();
+}
+function setShift(val) {
+  _newShift=val;
+  document.getElementById('shift-yes').classList.toggle('on',val);
+  document.getElementById('shift-no').classList.toggle('on',!val);
+}
+function addCustomApp() {
+  var icon=document.getElementById('new-icon').value.trim()||'🔌';
+  var name=document.getElementById('new-name').value.trim();
+  var kw=parseFloat(document.getElementById('new-kw').value);
+  var best=document.getElementById('new-best').value.trim()||'Anytime';
+  var note=document.getElementById('new-note').value.trim()||'';
+  if (!name||isNaN(kw)||kw<=0){alert('Please enter a name and valid power (kW).');return;}
+  var id='custom_'+Date.now();
+  var customs=getCustomApps(); customs.push({id:id,icon:icon,name:name,kw:kw,shift:_newShift,best:best,note:note});
+  setCustomApps(customs);
+  var ids=getUserApps(); ids.push(id); setUserApps(ids);
+  renderAppliances(_price);
+  rebuildPanelToggles();
+  closeAddApp();
+}
+
+// ══════════════════════════════════
+// PANEL CHECKER  ← NaN fix: store kw as number attr, parse cleanly
+// ══════════════════════════════════
+function rebuildPanelToggles() {
+  var row=document.getElementById('tog-row');
+  var apps=getActiveApps();
+  var html='';
+  apps.forEach(function(a){
+    var on=_panelOn.has(a.id);
+    // Store kw as a pure numeric data attribute — no unit suffix
+    html+='<button class="tog'+(on?' on':'')+'" data-id="'+a.id+'" data-kw="'+Number(a.kw)+'" onclick="togglePanel(this)">'+
+      a.icon+' '+a.name+' ('+a.kw+'kW)</button>';
+  });
+  row.innerHTML=html;
+  updatePanel();
+}
+
+function togglePanel(btn) {
+  var id=btn.dataset.id;
+  if (_panelOn.has(id)){_panelOn.delete(id);btn.classList.remove('on');}
+  else{_panelOn.add(id);btn.classList.add('on');}
+  updatePanel();
+}
+
+function updatePanel() {
+  var total=0;
+  document.querySelectorAll('#tog-row .tog.on').forEach(function(b){
+    var kw=parseFloat(b.getAttribute('data-kw'));
+    if (!isNaN(kw)) total+=kw;
+  });
+  total=Math.round(total*10)/10;
+  if (isNaN(total)) total=0;
+  var pct=(total/24*100).toFixed(1);
+  var safe=total<=19.2, over=total>24;
+  var pc=over?'var(--red)':(safe?'var(--green)':'var(--amber)');
+  var pb=over?'var(--red-bg)':(safe?'var(--green-bg)':'var(--amber-bg)');
+  var msg=over
+    ?'🚨 OVER CAPACITY — '+total+' kW · Breaker trip risk! Turn something off now.'
+    :!safe?'⚠ Over 80% safe limit — '+total+' kW running (max safe: 19.2 kW)'
+    :'✓ Safe — '+total+' kW running ('+pct+'% of 24 kW panel)';
+  var res=document.getElementById('panel-result');
+  var fill=document.getElementById('pbar-fill');
+  if (res){res.style.background=pb;res.style.color=pc;res.textContent=msg;}
+  if (fill){fill.style.width=Math.min(100,total/24*100).toFixed(1)+'%';fill.style.background=pc;}
+}
+
+// ══════════════════════════════════
+// WIZARD
+// ══════════════════════════════════
+function buildWizardApps() {
+  var active=getUserApps(), html='';
+  APP_LIBRARY.forEach(function(a){
+    var sel=active.indexOf(a.id)!==-1;
+    html+='<div class="wiz-ai'+(sel?' selected':'')+'" onclick="toggleWizApp(this,\''+a.id+'\')">'+
+      '<div class="wiz-icon">'+a.icon+'</div>'+
+      '<div><div class="wiz-aname">'+a.name+'</div><div class="wiz-akw">'+a.kw+' kW</div></div>'+
+      '<div class="wiz-check">'+(sel?'✓':'')+'</div></div>';
+  });
+  document.getElementById('wiz-app-grid').innerHTML=html;
+}
+function toggleWizApp(el,id) {
+  el.classList.toggle('selected');
+  el.querySelector('.wiz-check').textContent=el.classList.contains('selected')?'✓':'';
+}
+function wizNext(step) {
+  if (step===1) {
+    var city=document.getElementById('wiz-city').value.trim();
+    var zip=document.getElementById('wiz-zip').value.trim();
+    if (!city){document.getElementById('wiz-city').focus();return;}
+    setLocation({city:city||'My Location',zip:zip});
+    var favs=getFavs();
+    if (!favs.find(function(f){return f.city===city&&f.zip===zip;})){favs.push({city:city,zip:zip});setFavs(favs);}
+    renderLocLabel();
+    buildWizardApps();
+    document.getElementById('wiz-1').classList.remove('active');
+    document.getElementById('wiz-2').classList.add('active');
+  } else if (step===2) {
+    var selected=[];
+    document.querySelectorAll('.wiz-ai.selected').forEach(function(el){
+      // Extract id from onclick attr
+      var m=el.getAttribute('onclick').match(/'([^']+)'\)$/);
+      if (m) selected.push(m[1]);
+    });
+    if (!selected.length) selected=['fridge','lights'];
+    setUserApps(selected);
+    document.getElementById('wiz-2').classList.remove('active');
+    document.getElementById('wiz-3').classList.add('active');
+  }
+}
+function wizBack(step) {
+  if (step===2){document.getElementById('wiz-2').classList.remove('active');document.getElementById('wiz-1').classList.add('active');}
+}
+function skipWizard() {
+  setOnboarded();
+  document.getElementById('wizard-overlay').classList.remove('open');
+  renderAppliances(_price);rebuildPanelToggles();
+}
+function finishWizard() {
+  setOnboarded();
+  document.getElementById('wizard-overlay').classList.remove('open');
+  renderAppliances(_price);rebuildPanelToggles();
+}
+
+// ══════════════════════════════════
+// DATA FETCHING
+// ══════════════════════════════════
+function processHourly(feed) {
+  var hourly={};
+  feed.forEach(function(d){
+    var dt=new Date(parseInt(d.millisUTC));
+    var lh=parseInt(dt.toLocaleString('en-US',{hour:'numeric',hour12:false,timeZone:'America/Chicago'}).replace('24','0'));
+    if (!hourly[lh]) hourly[lh]={sum:0,n:0};
+    hourly[lh].sum+=parseFloat(d.price);
+    hourly[lh].n++;
+  });
+  var result=[];
+  for(var h=0;h<24;h++){
+    if (hourly[h]&&hourly[h].n>=1) result.push({h:h,p:Math.round(hourly[h].sum/hourly[h].n*10)/10,partial:hourly[h].n<12});
+    else result.push({h:h,p:null});
+  }
+  return result;
+}
+
+async function load() {
+  try {
+    var res=await Promise.all([
+      fetch('https://hourlypricing.comed.com/api?type=currenthouraverage').then(function(r){return r.json();}),
+      fetch('https://hourlypricing.comed.com/api?type=5minutefeed').then(function(r){return r.json();})
+    ]);
+    var j1=res[0],j2=res[1];
+    _price=(j1&&j1.length)?Math.round(parseFloat(j1[0].price)*10)/10:null;
+    _fiveMin=j2||[];
+    _hourly=processHourly(_fiveMin);
+    // Patch current hour with the authoritative currenthouraverage value
+    if (_price!==null){var ch=nowCT();_hourly[ch]={h:ch,p:_price,partial:true};}
+    renderStats(_price,_hourly);
+    renderChart();
+    renderAppliances(_price);
+  } catch(e) {
+    document.getElementById('stats-row').innerHTML=
+      '<div style="color:var(--text3);font-size:13px;padding:.5rem 0">Could not reach ComEd API. '+
+      '<a href="https://hourlypricing.comed.com/live-prices/" target="_blank" style="color:var(--blue)">View on ComEd ↗</a></div>';
+  }
+}
+
+// ══════════════════════════════════
+// INIT
+// ══════════════════════════════════
+renderLocLabel();
+rebuildPanelToggles();
+
+if (!hasOnboarded()) {
+  var defLoc=getLocation();
+  document.getElementById('wiz-city').value=defLoc.city;
+  document.getElementById('wiz-zip').value=defLoc.zip;
+  buildWizardApps();
+  document.getElementById('wizard-overlay').classList.add('open');
+} else {
+  renderAppliances(null);
+}
+
+load();
+setInterval(load,300000);
+window.addEventListener('resize',function(){if(_fiveMin.length||_hourly.length)renderChart();});
+</script>
+</body>
+</html>
