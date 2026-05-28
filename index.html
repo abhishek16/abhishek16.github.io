@@ -120,7 +120,36 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .pbar-marker{position:absolute;top:-2px;left:80%;width:2px;height:14px;background:var(--amber);border-radius:1px;opacity:.8}
 .panel-result{margin-top:8px;padding:10px 14px;border-radius:var(--radius);font-size:13px;font-weight:700}
 
-/* Footer */
+/* kWh tip */
+.kwh-tip{display:flex;align-items:flex-start;gap:12px;background:var(--blue-bg);border:1px solid var(--blue)33;border-radius:var(--radius-lg);padding:12px 16px;margin-bottom:14px;font-size:13px;color:var(--text2);line-height:1.5}
+.kwh-tip-icon{font-size:22px;flex-shrink:0;margin-top:-1px}
+.kwh-tip strong{color:var(--text);font-weight:700}
+
+/* Panel redesign */
+.panel-card-hdr{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.panel-devices{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.pd-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--radius);background:var(--surface2);border:1px solid transparent;transition:all .15s}
+.pd-row.pd-on{background:var(--green-bg);border-color:var(--green-mid)33}
+.pd-row.pd-on .pd-name{color:var(--text);font-weight:600}
+.pd-toggle{width:36px;height:20px;border-radius:10px;border:none;background:var(--surface3);cursor:pointer;position:relative;flex-shrink:0;transition:background .2s}
+.pd-toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.pd-toggle.on{background:var(--green-mid)}
+.pd-toggle.on::after{transform:translateX(16px)}
+.pd-icon{font-size:18px;flex-shrink:0;width:24px;text-align:center}
+.pd-name{font-size:13px;color:var(--text2);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pd-watts-wrap{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.pd-watts-input{width:68px;padding:4px 7px;font-size:12px;font-weight:700;border:1px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text);text-align:right;font-family:inherit}
+.pd-watts-input:focus{outline:none;border-color:var(--blue)}
+.pd-unit{font-size:11px;color:var(--text3);min-width:16px}
+.pd-kwh{font-size:11px;color:var(--text3);min-width:54px;text-align:right}
+.pd-cost{font-size:11px;min-width:60px;text-align:right;font-weight:600}
+.pd-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;padding:0 3px;opacity:0;transition:opacity .15s;font-family:inherit;flex-shrink:0}
+.pd-row:hover .pd-del{opacity:1}
+.pd-del:hover{color:var(--red)}
+.pd-section-lbl{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;padding:6px 10px 2px}
+
+/* panel footer */
+
 .footer{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
 .footer a{font-size:12px;padding:6px 12px;border:1px solid var(--border2);border-radius:20px;color:var(--text2);text-decoration:none;transition:all .15s}
 .footer a:hover{border-color:var(--blue);color:var(--blue)}
@@ -197,8 +226,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <!-- Header -->
   <div class="hdr fade-up">
     <div class="hdr-l">
-      <div class="eye">ComEd Hourly Pricing · PJM Northern Illinois</div>
-      <h1>Appliance Decision Dashboard</h1>
+      <div class="eye">Smart Energy · Live Electricity Prices</div>
+      <h1>⚡ Should I Run It Now?</h1>
     </div>
     <div class="hdr-r">
       <button class="loc-pill" onclick="openLocModal()" id="loc-btn">📍 Loading…</button>
@@ -217,6 +246,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="price-grid fade-up" id="price-grid" style="display:none">
     <!-- filled by JS -->
   </div>
+
+  <!-- Market banner -->
+  <div id="market-banner"></div>
 
   <!-- Alert -->
   <div class="alert" id="alert-bar"></div>
@@ -254,21 +286,78 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
   <div class="apps-grid fade-up" id="apps-grid"></div>
 
-  <!-- Panel checker -->
-  <div class="panel-card fade-up">
-    <div class="sec-hdr" style="margin-bottom:10px">
-      <div class="sec-title">Panel Load Checker — 100A · 24 kW Max</div>
+  <!-- kWh tip -->
+  <div class="kwh-tip fade-up">
+    <span class="kwh-tip-icon">💡</span>
+    <div>
+      <strong>What's a kWh?</strong>
+      Ten 100-watt light bulbs running for 1 hour = 1 kWh. Your dryer uses about 5 kWh per load. Your EV needs ~60 kWh per week.
     </div>
-    <div class="tog-row" id="tog-row"></div>
-    <div class="panel-result" id="panel-result">Select appliances above to check panel load</div>
+  </div>
+
+  <!-- Panel checker -->
+  <div class="panel-card fade-up" id="panel-card">
+    <div class="panel-card-hdr">
+      <div>
+        <div class="sec-title">🔌 What's Running Right Now?</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:3px">Toggle devices on/off · edit wattage · add custom devices</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <div style="font-size:12px;color:var(--text2)">Panel size:</div>
+        <select id="panel-amps" onchange="updatePanel()" style="padding:5px 10px;font-size:13px;font-weight:700;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface2);color:var(--text);font-family:inherit;cursor:pointer">
+          <option value="60">60A (14.4 kW)</option>
+          <option value="100" selected>100A (24 kW)</option>
+          <option value="150">150A (36 kW)</option>
+          <option value="200">200A (48 kW)</option>
+          <option value="400">400A (96 kW)</option>
+        </select>
+        <button class="sec-btn" onclick="openPanelAddDevice()">＋ Add Device</button>
+      </div>
+    </div>
+
+    <!-- Device list -->
+    <div id="panel-devices"></div>
+
+    <!-- Result bar -->
+    <div class="panel-result" id="panel-result">Toggle devices above to check your panel load</div>
     <div class="pbar-wrap">
-      <div class="pbar-labels"><span>0 kW</span><span style="color:var(--amber)">19.2 kW safe limit</span><span>24 kW</span></div>
-      <div class="pbar-track"><div class="pbar-fill" id="pbar-fill" style="width:0%;background:var(--green)"></div><div class="pbar-marker"></div></div>
+      <div class="pbar-labels">
+        <span>0</span>
+        <span style="color:var(--amber)" id="pbar-safe-label">Safe limit</span>
+        <span id="pbar-max-label">Max</span>
+      </div>
+      <div class="pbar-track">
+        <div class="pbar-fill" id="pbar-fill" style="width:0%;background:var(--green)"></div>
+        <div class="pbar-marker" id="pbar-marker"></div>
+      </div>
+    </div>
+    <div id="panel-cost-note" style="font-size:11px;color:var(--text3);margin-top:8px"></div>
+  </div>
+
+  <!-- Add panel device modal -->
+  <div class="overlay" id="panel-add-overlay">
+    <div class="modal">
+      <h2>＋ Add Device to Panel</h2>
+      <div class="msub">Add any device to track in the panel load checker.</div>
+      <label>Icon (emoji)</label>
+      <input class="minput" id="pd-icon" placeholder="🔌" maxlength="4" style="width:72px"/>
+      <label>Device name</label>
+      <input class="minput" id="pd-name" placeholder="e.g. Hot Tub"/>
+      <label>Wattage (W)</label>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+        <input class="minput" id="pd-watts" type="number" min="1" max="100000" placeholder="e.g. 3500" style="width:140px"/>
+        <span style="font-size:12px;color:var(--text3)">watts</span>
+      </div>
+      <div class="mnote">Tip: check the label on the device or look up the model number online.</div>
+      <div class="mactions">
+        <button class="btn btn-primary" onclick="addPanelDevice()">Add Device</button>
+        <button class="btn btn-ghost" onclick="closePanelAddDevice()">Cancel</button>
+      </div>
     </div>
   </div>
 
   <!-- Footer -->
-  <div class="footer fade-up">
+  <div class="footer fade-up" id="footer-links">
     <a href="https://hourlypricing.comed.com/live-prices/" target="_blank">Live Prices ↗</a>
     <a href="https://hourlypricing.comed.com/live-prices/day-ahead-prices/" target="_blank">Tomorrow ↗</a>
     <a href="https://hourlypricing.comed.com/live-prices/five-minute-prices/" target="_blank">5-Min Detail ↗</a>
@@ -388,6 +477,139 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <script>
 // ══════════════════════════════════
+// MARKET DATABASE  (sourced 2025–2026)
+// ══════════════════════════════════
+var MARKET_DB = [
+  {state:'IL',utility:'ComEd',territory:'Northern IL (Chicago, Aurora, Rockford)',market:'PJM',node:'PJM Northern Illinois Hub (NIDIL)',
+   program:'ComEd Hourly Pricing (CHP)',api:'https://hourlypricing.comed.com/api?type=currenthouraverage',api5m:'https://hourlypricing.comed.com/api?type=5minutefeed',apiType:'live_json',
+   capRisk:true,capHoursStart:14,capHoursEnd:18,capMonths:[5,6,7,8],
+   adder:{tx:1.82,delNS:6.23,delS:7.60,tax:1.95,totalNS:10.00,totalS:11.37},
+   sumStart:[6,1],sumEnd:[9,30],
+   note:'Live PJM LMP via ComEd CHP API. No markup. PJM capacity charge based on 5 peak hours/yr.',
+   prefixes:['600','601','602','603','604','605','606','607','608','609','610','611','612','613','614','615','616','617','618','619','620','621','622','623','624','625','626','627','628']},
+
+  {state:'IL',utility:'Ameren Illinois',territory:'Central/Southern IL (Springfield, Peoria, Champaign)',market:'MISO',node:'MISO Illinois Hub (MS.ILLINOIS.HUB)',
+   program:'Ameren Power Smart Pricing (PSP)',api:null,api5m:null,apiType:'no_public_api',
+   capRisk:false,capHoursStart:14,capHoursEnd:18,capMonths:[5,6,7,8],
+   adder:{tx:2.63,delNS:5.40,delS:6.10,tax:1.80,totalNS:9.83,totalS:10.53},
+   sumStart:[6,1],sumEnd:[9,30],
+   note:'Ameren transmission 2.629¢/kWh confirmed Jan 2026. MISO market, not PJM.',
+   prefixes:['616','617','618','619','620','621','622','623','624','625','626','627','628','629','630','631','632','633','634','635']},
+
+  {state:'TX',utility:'Oncor (Dallas / DFW)',territory:'Dallas-Fort Worth, North Texas',market:'ERCOT',node:'ERCOT North Zone (LZ_NORTH)',
+   program:'ERCOT Real-Time via REP (powertochoose.org)',api:null,api5m:null,apiType:'ercot_api',
+   capRisk:false,capHoursStart:14,capHoursEnd:18,capMonths:[5,6,7,8],
+   adder:{tx:0.00,delNS:5.60,delS:5.60,tax:0.60,totalNS:6.20,totalS:6.20},
+   sumStart:null,sumEnd:null,
+   note:'Oncor TDU: 5.6032¢/kWh volumetric (PUCT Sep 2025). No seasonal distinction. No federal capacity market.',
+   prefixes:['750','751','752','753','754','755','756','757','758','759','760','761','762','763','764','765','766','767','768','769']},
+
+  {state:'TX',utility:'CenterPoint Energy (Houston)',territory:'Houston, Gulf Coast Texas',market:'ERCOT',node:'ERCOT Houston Zone (LZ_HOUSTON)',
+   program:'ERCOT Real-Time via REP (powertochoose.org)',api:null,api5m:null,apiType:'ercot_api',
+   capRisk:false,capHoursStart:14,capHoursEnd:18,capMonths:[5,6,7,8],
+   adder:{tx:0.00,delNS:5.79,delS:5.79,tax:0.60,totalNS:6.39,totalS:6.39},
+   sumStart:null,sumEnd:null,
+   note:'CenterPoint volumetric: 5.7889¢/kWh (PUCT Sep 2025). Houston zone spikes in summer heat events.',
+   prefixes:['770','771','772','773','774','775','776','777','778','779']},
+
+  {state:'TX',utility:'AEP Texas (Central/South)',territory:'San Antonio, Corpus Christi, Rio Grande Valley',market:'ERCOT',node:'ERCOT South Zone (LZ_SOUTH)',
+   program:'ERCOT Real-Time via REP (powertochoose.org)',api:null,api5m:null,apiType:'ercot_api',
+   capRisk:false,capHoursStart:14,capHoursEnd:18,capMonths:[5,6,7,8],
+   adder:{tx:0.00,delNS:6.00,delS:6.00,tax:0.60,totalNS:6.60,totalS:6.60},
+   sumStart:null,sumEnd:null,
+   note:'AEP Central 6.0¢/kWh (PUCT Sep 2025). ERCOT $5000/MWh price cap applies.',
+   prefixes:['780','781','782','783','784','785','786','787','788','789','790','791','792','793','794','795','796','797','798','799']},
+
+  {state:'PA',utility:'PECO Energy',territory:'Philadelphia, southeastern Pennsylvania',market:'PJM',node:'PJM PECO Zone',
+   program:'PECO Smart Hours / Time-Varying Rate',api:null,api5m:null,apiType:'no_public_api',
+   capRisk:true,capHoursStart:14,capHoursEnd:18,capMonths:[5,6,7,8],
+   adder:{tx:2.10,delNS:6.80,delS:7.50,tax:1.62,totalNS:10.52,totalS:11.22},
+   sumStart:[6,1],sumEnd:[9,30],
+   note:'PECO PTC 11.024¢ Dec 2025 → 11.572¢ Jun 2026. Total all-in ~20¢/kWh. No live hourly API.',
+   prefixes:['190','191','192','193','194','195','196','197','198','199']},
+
+  {state:'PA',utility:'PPL Electric',territory:'Lehigh Valley, Harrisburg, Lancaster, Scranton',market:'PJM',node:'PJM PPL Zone',
+   program:'PPL Time-of-Use / Dynamic Pricing',api:null,api5m:null,apiType:'no_public_api',
+   capRisk:true,capHoursStart:14,capHoursEnd:18,capMonths:[5,6,7,8],
+   adder:{tx:2.20,delNS:7.00,delS:7.80,tax:1.70,totalNS:10.90,totalS:11.70},
+   sumStart:[6,1],sumEnd:[9,30],
+   note:'PPL PTC 12.953¢ Dec 2025 → 13.147¢ Jun 2026. All-in ~19.2¢/kWh Apr 2026.',
+   prefixes:['170','171','172','173','174','175','176','177','178','179','180','181','182','183','184','185','186','187','188','189']},
+
+  {state:'OH',utility:'AEP Ohio',territory:'Columbus, central and southeastern Ohio',market:'PJM',node:'PJM AEP-Dayton Hub',
+   program:'AEP Ohio gridSMART Real-Time Pricing',api:null,api5m:null,apiType:'no_public_api',
+   capRisk:true,capHoursStart:14,capHoursEnd:18,capMonths:[5,6,7,8],
+   adder:{tx:4.30,delNS:4.50,delS:4.50,tax:1.20,totalNS:10.00,totalS:10.00},
+   sumStart:null,sumEnd:null,
+   note:'AEP Ohio PTC 9.94¢ (expires Aug 2026). Transmission BTCR raised to ~4.3¢ Apr 2026. Total all-in ~10.7¢.',
+   prefixes:['430','431','432','433','434','435','436','437','438','439','440','441','442','443','444','445','446','447','448']},
+
+  {state:'OH',utility:'AES Ohio (Dayton P&L)',territory:'Dayton metro, southwest Ohio',market:'PJM',node:'PJM AEP-Dayton Hub',
+   program:'AES Ohio Time-of-Day Pricing',api:null,api5m:null,apiType:'no_public_api',
+   capRisk:true,capHoursStart:14,capHoursEnd:18,capMonths:[5,6,7,8],
+   adder:{tx:4.00,delNS:4.20,delS:4.20,tax:1.10,totalNS:9.30,totalS:9.30},
+   sumStart:null,sumEnd:null,
+   note:'Formerly Dayton Power & Light. PJM AEP-Dayton hub pricing.',
+   prefixes:['450','451','452','453','454','455','456','457','458']},
+
+  {state:'MD',utility:'BGE (Baltimore Gas & Electric)',territory:'Baltimore metro, central Maryland',market:'PJM',node:'PJM BGE Zone',
+   program:'BGE Smart Energy Rewards / Peak Rewards',api:null,api5m:null,apiType:'no_public_api',
+   capRisk:true,capHoursStart:14,capHoursEnd:18,capMonths:[5,6,7,8],
+   adder:{tx:2.50,delNS:7.20,delS:8.40,tax:1.80,totalNS:11.50,totalS:12.70},
+   sumStart:[6,1],sumEnd:[9,30],
+   note:'BGE all-in PTC 16.64¢ through May 2026. Fixed customer charge ~$10/mo separate.',
+   prefixes:['210','211','212','213','214','215','216','217','218','219']},
+
+  {state:'MD',utility:'PEPCO',territory:'DC suburbs, Montgomery & Prince George\'s counties MD',market:'PJM',node:'PJM PEPCO Zone',
+   program:'PEPCO Energy Wise Rewards',api:null,api5m:null,apiType:'no_public_api',
+   capRisk:true,capHoursStart:14,capHoursEnd:18,capMonths:[5,6,7,8,9],
+   adder:{tx:2.30,delNS:6.50,delS:7.80,tax:1.70,totalNS:10.50,totalS:11.80},
+   sumStart:[6,1],sumEnd:[10,31],
+   note:'PEPCO PTC 12.58¢ (Oct 2025–May 2026) → 13.25¢ Jun 2026. Summer runs Jun–Oct per MD PSC.',
+   prefixes:['200','201','202','203','204','205','206','207','208','209','220','221','222','223','224','225','226','227','228','229']},
+
+  {state:'NY',utility:'Con Edison',territory:'New York City (all 5 boroughs), Westchester',market:'NYISO',node:'NYISO Zone J (NYC)',
+   program:'Con Edison Rider M Day-Ahead Hourly Pricing',api:null,api5m:null,apiType:'day_ahead_only',
+   capRisk:true,capHoursStart:14,capHoursEnd:18,capMonths:[5,6,7,8],
+   adder:{tx:3.50,delNS:12.00,delS:14.50,tax:2.50,totalNS:18.00,totalS:20.50},
+   sumStart:[6,1],sumEnd:[9,30],
+   note:'NYC all-in ~27.39¢/kWh Mar 2026 (59% above nat\'l avg). Highest delivery in continental US. Zone J congestion premiums apply.',
+   prefixes:['100','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115','116','117','118','119']},
+
+  {state:'NY',utility:'NYSEG / RG&E (Upstate NY)',territory:'Buffalo, Rochester, Syracuse, Albany',market:'NYISO',node:'NYISO Zone A (West) / Zone C (Central)',
+   program:'NYSEG / RG&E Time-of-Use Pricing',api:null,api5m:null,apiType:'no_public_api',
+   capRisk:false,capHoursStart:14,capHoursEnd:18,capMonths:[5,6,7,8],
+   adder:{tx:2.80,delNS:7.00,delS:8.00,tax:2.00,totalNS:11.80,totalS:12.80},
+   sumStart:[6,1],sumEnd:[9,30],
+   note:'Upstate NY far cheaper than NYC Zone J. No NYISO congestion premium in upstate zones.',
+   prefixes:['120','121','122','123','124','125','126','127','128','129','130','131','132','133','134','135','136','137','138','139','140','141','142','143','144','145','146','147','148','149']},
+
+  {state:'CA',utility:'PG&E',territory:'Northern and Central California (SF Bay Area, Sacramento)',market:'CAISO',node:'CAISO NP15 (North Path 15 Hub)',
+   program:'PG&E E-TOU-C / EV2-A (TOU — not real-time)',api:null,api5m:null,apiType:'tou_not_real_time',
+   capRisk:false,capHoursStart:16,capHoursEnd:21,capMonths:[5,6,7,8],
+   adder:{tx:2.80,delNS:14.00,delS:16.50,tax:3.50,totalNS:20.30,totalS:22.80},
+   sumStart:[6,1],sumEnd:[9,30],
+   note:'CA TOU, not un-capped real-time. PG&E bundled ~27¢/kWh. New $24/mo Base Services Charge from Mar 2026 reduces volumetric by ~6¢. Peak 4–9 PM.',
+   prefixes:['940','941','942','943','944','945','946','947','948','949','950','951','952','953','954','955','956','957','958','959']},
+
+  {state:'CA',utility:'SCE (Southern California Edison)',territory:'LA metro, Orange County, Riverside, San Bernardino',market:'CAISO',node:'CAISO SP15 (South Path 15 Hub)',
+   program:'SCE TOU-D-PRIME / TOU-D-4-9PM (TOU — not real-time)',api:null,api5m:null,apiType:'tou_not_real_time',
+   capRisk:false,capHoursStart:16,capHoursEnd:21,capMonths:[5,6,7,8],
+   adder:{tx:3.00,delNS:15.00,delS:18.00,tax:3.80,totalNS:21.80,totalS:24.80},
+   sumStart:[6,1],sumEnd:[9,30],
+   note:'SCE avg residential 34.5¢/kWh Jan 2026. Peak TOU 4–9 PM can exceed 50¢/kWh. Wildfire surcharges ~1¢/kWh.',
+   prefixes:['900','901','902','903','904','905','906','907','908','909','910','911','912','913','914','915','916','917','918','919','920','921','922','923','924','925','926','927','928']},
+
+  {state:'CA',utility:'SDG&E (San Diego Gas & Electric)',territory:'San Diego County',market:'CAISO',node:'CAISO SP15 (South Path 15 Hub)',
+   program:'SDG&E TOU-DR1 / EV-TOU (TOU — not real-time)',api:null,api5m:null,apiType:'tou_not_real_time',
+   capRisk:false,capHoursStart:16,capHoursEnd:21,capMonths:[5,6,7,8],
+   adder:{tx:3.20,delNS:20.00,delS:23.00,tax:4.50,totalNS:27.70,totalS:30.70},
+   sumStart:[6,1],sumEnd:[10,31],
+   note:'SDG&E ~45.7¢/kWh bundled Jan 2026 — most expensive utility in continental US. Peak 4–9 PM can reach 60¢+.',
+   prefixes:['919','920','921','922','923','924','925','926','927','928','929']}
+];
+
+// ══════════════════════════════════
 // STATE
 // ══════════════════════════════════
 var _price    = null;
@@ -396,7 +618,8 @@ var _hourly   = [];
 var _chartMode= 'hourly';
 var _panelOn  = new Set(['fridge','hvac','lights']);
 var _newShift = true;
-var _isSummer = false; // June–September
+var _isSummer = false;
+var _market   = null; // active market config
 
 // ── Appliance library ──
 var APP_LIBRARY = [
@@ -439,25 +662,78 @@ function getActiveApps() {
 }
 
 // ══════════════════════════════════
-// RATE MATH
+// ZIP → MARKET LOOKUP
 // ══════════════════════════════════
+function lookupMarket(zip) {
+  if (!zip) return MARKET_DB[0]; // default ComEd
+  var prefix3 = String(zip).replace(/\D/g,'').slice(0,3);
+  var prefix5 = String(zip).replace(/\D/g,'').slice(0,5);
+  // Try exact 3-digit prefix match
+  var match = null;
+  // Sort so more-specific matches win (e.g. overlapping TX prefixes)
+  MARKET_DB.forEach(function(m){
+    if (m.prefixes.indexOf(prefix3)!==-1) match=m;
+  });
+  return match || null; // null = unsupported region
+}
+
+function applyMarket(zip) {
+  var m = lookupMarket(zip);
+  _market = m;
+  return m;
+}
+
+// ══════════════════════════════════
+// RATE MATH  (market-aware)
+// ══════════════════════════════════
+function isSummerNow(m) {
+  // m = active market config
+  if (!m || !m.sumStart) return false;
+  var now=new Date(), mo=now.getMonth()+1, dy=now.getDate(); // mo is 1-indexed
+  var ss=m.sumStart, se=m.sumEnd; // [month_1indexed, day]
+  var afterStart = (mo>ss[0]) || (mo===ss[0]&&dy>=ss[1]);
+  var beforeEnd  = (mo<se[0]) || (mo===se[0]&&dy<=se[1]);
+  return afterStart && beforeEnd;
+}
+
 function getDeliveryAdder() {
-  // PJM summer rate = June 1 through September 30 (calendar-exact)
-  var now = new Date();
-  var m = now.getMonth(); // 0-indexed
-  var d = now.getDate();
-  // Summer starts Jun 1 (m===5, d>=1) and ends Sep 30 (m===8, d<=30)
-  _isSummer = (m > 5 && m < 8) ||          // July, August always summer
-              (m === 5 && d >= 1)  ||       // June 1 onward
-              (m === 8 && d <= 30);         // through Sep 30
-  // Non-summer: transmission 1.82 + delivery 6.23 + taxes ~1.95 ≈ 10.0¢
-  // Summer:     transmission 1.82 + delivery 7.60 + taxes ~2.08 ≈ 11.5¢
-  return _isSummer ? 11.5 : 10.0;
+  var m = _market || MARKET_DB[0];
+  _isSummer = isSummerNow(m);
+  return _isSummer ? m.adder.totalS : m.adder.totalNS;
 }
 
 function getAllInPrice(supplyPrice) {
   if (supplyPrice === null) return null;
   return Math.round((supplyPrice + getDeliveryAdder()) * 10) / 10;
+}
+
+// Market info banner (shown below stats when market ≠ ComEd live)
+function renderMarketBanner() {
+  var el = document.getElementById('market-banner');
+  if (!el) return;
+  var m = _market;
+  if (!m) {
+    el.innerHTML='<div style="padding:10px 14px;background:var(--amber-bg);border:1px solid var(--amber);border-radius:var(--radius-lg);font-size:12px;color:var(--amber);margin-bottom:14px">'+
+      '⚠ <strong>Your ZIP code is not in our supported market database.</strong> Defaulting to ComEd CHP pricing. '+
+      '<a href="#" onclick="openLocModal();return false" style="color:var(--amber)">Update your location ↗</a></div>';
+    return;
+  }
+  var isLive = m.apiType==='live_json';
+  var isTOU  = m.apiType==='tou_not_real_time';
+  var bg     = isLive?'var(--green-bg)':'var(--blue-bg)';
+  var col    = isLive?'var(--green)':'var(--blue)';
+  var icon   = isLive?'🟢':isTOU?'🕐':'📊';
+  var tag    = isLive?'Live real-time API':isTOU?'TOU pricing (not real-time)':'No live API — historical estimates';
+  var mName  = m.market+' · '+m.node;
+  el.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 14px;background:'+bg+';border:1px solid '+col+'44;border-radius:var(--radius-lg);font-size:12px;color:var(--text2);margin-bottom:14px">'+
+    '<span style="font-size:16px">'+icon+'</span>'+
+    '<div><strong style="color:'+col+'">'+m.utility+'</strong> · '+m.state+' · '+m.territory+'</div>'+
+    '<div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">'+
+      '<span style="background:'+col+'22;color:'+col+';padding:2px 8px;border-radius:4px;font-weight:700;font-size:11px">'+m.market+'</span>'+
+      '<span style="color:var(--text3)">'+mName+'</span>'+
+      '<span style="color:var(--text3)">'+tag+'</span>'+
+    '</div>'+
+  '</div>';
 }
 
 // ══════════════════════════════════
@@ -502,6 +778,9 @@ function saveLocation() {
   setLocation({city:city,zip:zip});
   renderLocLabel();
   closeLocModal();
+  // Re-apply market and reload data for new location
+  applyMarket(zip);
+  load();
 }
 function saveAsFav() {
   var city=document.getElementById('loc-city').value.trim()||'My Location';
@@ -537,6 +816,7 @@ function hLabel(h) {
 }
 
 function renderStats(price, hourly) {
+  var m=_market||MARKET_DB[0];
   var r=getRisk(price);
   var ch=nowCT();
   var future=hourly.filter(function(x){return x.h>ch&&x.p!==null;});
@@ -544,10 +824,11 @@ function renderStats(price, hourly) {
   var allin=getAllInPrice(price);
   var now=new Date();
   var html='';
+  var mktLabel=m.market+' real-time · ¢/kWh';
   // Supply price
   html+='<div class="stat fade-up"><div class="lbl">Supply Price</div>'+
     '<div class="val" style="color:'+r.color+'">'+(price!==null?price.toFixed(1)+'¢':'—')+'</div>'+
-    '<div class="sub">PJM real-time market · ¢/kWh</div></div>';
+    '<div class="sub">'+mktLabel+'</div></div>';
   // All-in price
   html+='<div class="stat fade-up" style="border-left:3px solid '+(allin!==null?r.color:'var(--gray)')+'">'+
     '<div class="lbl">All-In Price</div>'+
@@ -561,35 +842,40 @@ function renderStats(price, hourly) {
   // Next cheap
   html+='<div class="stat fade-up"><div class="lbl">Next Cheap Window</div>'+
     '<div class="val" style="color:var(--green);font-size:18px;padding-top:4px">'+(cheap?hLabel(cheap.h):'12 AM')+'</div>'+
-    '<div class="sub">'+(cheap?cheap.p.toFixed(1)+'¢/kWh supply · ~'+(cheap.p+getDeliveryAdder()).toFixed(1)+'¢ all-in':'overnight off-peak')+'</div></div>';
+    '<div class="sub">'+(cheap?cheap.p.toFixed(1)+'¢ supply · ~'+(cheap.p+getDeliveryAdder()).toFixed(1)+'¢ all-in':'overnight off-peak')+'</div></div>';
   document.getElementById('stats-row').innerHTML=html;
 
   // Refresh time
   document.getElementById('rtime').textContent='Updated '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:'America/Chicago'});
 
-  // Price breakdown cards
+  // Market banner
+  renderMarketBanner();
+
+  // Price breakdown
   renderPriceBreakdown(price);
 
-  // Alert
+  // Alerts
   var ab=document.getElementById('alert-bar');
-  // Capacity risk: PJM peak hours = summer (Jun–Sep), weekdays, 2–6 PM CT
   var ch2=nowCT();
-  var dow=new Date().getDay(); // 0=Sun,6=Sat
+  var dow=new Date().getDay();
   var isWeekday=(dow>=1&&dow<=5);
-  var isCapacityRisk=_isSummer&&isWeekday&&(ch2>=14&&ch2<18);
+  var capMonths=m.capMonths||[];
+  var isCapRisk=m.capRisk&&_isSummer&&isWeekday&&(ch2>=m.capHoursStart&&ch2<m.capHoursEnd)&&(capMonths.indexOf(new Date().getMonth())!==-1);
   if (r.l==='spike') {
-    ab.style.background=r.bg;ab.style.color=r.color;
-    ab.innerHTML='⚠️ <strong>PJM price spike!</strong> Pause Tesla, dryer, water heater & AC now. Supply: '+price.toFixed(1)+'¢ · All-in: ~'+(allin||0).toFixed(1)+'¢/kWh';
+    ab.style.background=r.bg; ab.style.color=r.color;
+    ab.innerHTML='⚠️ <strong>'+m.market+' price spike!</strong> Pause EV charger, dryer, water heater & AC now. Supply: '+price.toFixed(1)+'¢ · All-in: ~'+(allin||0).toFixed(1)+'¢/kWh';
     ab.classList.add('on');
   } else if (r.l==='negative') {
-    ab.style.background=r.bg;ab.style.color=r.color;
-    ab.innerHTML='🎉 <strong>Negative PJM price — you\'re being paid to use electricity!</strong> Supply: '+price.toFixed(1)+'¢/kWh. Run everything you can right now.';
+    ab.style.background=r.bg; ab.style.color=r.color;
+    ab.innerHTML='🎉 <strong>Negative '+m.market+' price — you\'re being paid to use electricity!</strong> Supply: '+price.toFixed(1)+'¢/kWh. Run everything you can right now.';
     ab.classList.add('on');
-  } else if (isCapacityRisk) {
-    ab.style.background='var(--spike-bg)';ab.style.color='var(--spike)';
-    ab.innerHTML='🔴 <strong>PJM Capacity Risk Window (2–6 PM, summer weekday).</strong> Your monthly capacity charge is set by your 5 highest peak-hour draws of the summer. Minimize ALL large loads right now — especially HVAC, Tesla, dryer, and water heater. Every kW you avoid now could lower your bill for the entire year.';
+  } else if (isCapRisk) {
+    ab.style.background='var(--spike-bg)'; ab.style.color='var(--spike)';
+    ab.innerHTML='🔴 <strong>'+m.market+' Capacity Risk Window ('+hLabel(m.capHoursStart)+'–'+hLabel(m.capHoursEnd)+', summer weekday).</strong> Your annual capacity charge is set by your 5 highest peak-hour draws. Minimize ALL large loads right now — especially HVAC, EV charger, dryer, and water heater. Every kW avoided now could lower your bill for the entire year.';
     ab.classList.add('on');
-  } else {ab.classList.remove('on');}
+  } else {
+    ab.classList.remove('on');
+  }
 }
 
 function renderPriceBreakdown(supplyPrice) {
@@ -597,38 +883,49 @@ function renderPriceBreakdown(supplyPrice) {
   if (!grid) return;
   if (supplyPrice===null){grid.style.display='none';return;}
   grid.style.display='grid';
+  var m=_market||MARKET_DB[0];
   var adder=getDeliveryAdder();
   var allin=supplyPrice+adder;
-  var m=new Date().getMonth();
-  var delivCharge=_isSummer?7.60:6.23;
-  var taxEst=_isSummer?2.08:1.95;
-  // Card 1: supply breakdown
-  var c1='<div class="price-card">'+
-    '<div class="pc-title">⚡ Supply Price Breakdown <span class="badge" style="background:var(--blue-bg);color:var(--blue)">PJM N.I. Hub</span></div>'+
-    '<div class="price-row-item"><span class="prl">ComEd hourly supply</span><span class="prv">'+supplyPrice.toFixed(1)+'¢/kWh</span></div>'+
-    '<div class="price-row-item total-row"><span class="prl">Supply price</span><span class="prv" style="color:var(--blue)">'+supplyPrice.toFixed(1)+'¢</span></div>'+
-    '<div class="season-note">Live PJM real-time market price for the ComEd / Northern Illinois zone. Changes every 5 min; hourly average is what you are billed.</div>'+
-  '</div>';
-  // Card 2: all-in breakdown
+  var delivCharge=_isSummer?m.adder.delS:m.adder.delNS;
+  var taxEst=m.adder.tax;
+  var txCharge=m.adder.tx;
   var r=getRisk(supplyPrice);
   var ch2=nowCT();
   var dow=new Date().getDay();
   var isWeekday=(dow>=1&&dow<=5);
-  var isCapRisk=_isSummer&&isWeekday&&(ch2>=14&&ch2<18);
+  var capMonths=m.capMonths||[];
+  var isCapRisk=m.capRisk&&_isSummer&&isWeekday&&(ch2>=m.capHoursStart&&ch2<m.capHoursEnd)&&(capMonths.indexOf(new Date().getMonth())!==-1);
   var capRiskRow=isCapRisk
-    ?'<div class="price-row-item" style="background:var(--spike-bg);border-radius:6px;padding:6px 8px;margin:4px 0;border:none"><span class="prl" style="color:var(--spike);font-weight:700">⚠ PJM Capacity Risk NOW</span><span class="prv" style="color:var(--spike)">Shed load!</span></div>'
+    ?'<div class="price-row-item" style="background:var(--spike-bg);border-radius:6px;padding:6px 8px;margin:4px 0;border:none"><span class="prl" style="color:var(--spike);font-weight:700">⚠ '+m.market+' Capacity Risk NOW</span><span class="prv" style="color:var(--spike)">Shed load!</span></div>'
     :'';
+  var sumLabel=m.sumStart?'Jun '+m.sumStart[1]+'–'+(m.sumEnd[0]===9?'Sep':m.sumEnd[0]===10?'Oct':'?')+' '+m.sumEnd[1]:'N/A';
+
+  // Card 1: supply
+  var c1='<div class="price-card">'+
+    '<div class="pc-title">⚡ Supply Price <span class="badge" style="background:var(--blue-bg);color:var(--blue)">'+m.market+' · '+m.node.split('(')[0].trim()+'</span></div>'+
+    '<div class="price-row-item"><span class="prl">'+m.utility+' hourly supply</span><span class="prv">'+supplyPrice.toFixed(1)+'¢/kWh</span></div>'+
+    '<div class="price-row-item total-row"><span class="prl">Supply price</span><span class="prv" style="color:var(--blue)">'+supplyPrice.toFixed(1)+'¢</span></div>'+
+    '<div class="season-note">'+m.note+'</div>'+
+  '</div>';
+
+  // Card 2: all-in
   var c2='<div class="price-card">'+
-    '<div class="pc-title">💳 All-In Rate Breakdown <span class="badge" style="background:'+r.bg+';color:'+r.color+'">'+(allin).toFixed(1)+'¢/kWh</span></div>'+
+    '<div class="pc-title">💳 All-In Rate <span class="badge" style="background:'+r.bg+';color:'+r.color+'">~'+allin.toFixed(1)+'¢/kWh</span></div>'+
     capRiskRow+
-    '<div class="price-row-item"><span class="prl">Supply (PJM market)</span><span class="prv">'+supplyPrice.toFixed(1)+'¢</span></div>'+
-    '<div class="price-row-item"><span class="prl">Transmission services</span><span class="prv">1.82¢</span></div>'+
-    '<div class="price-row-item"><span class="prl">Delivery infrastructure</span><span class="prv">'+delivCharge.toFixed(2)+'¢ '+(m>=5&&m<=8?'(Jun–Sep rate)':'(Oct–May rate)')+'</span></div>'+
+    '<div class="price-row-item"><span class="prl">Supply ('+m.market+')</span><span class="prv">'+supplyPrice.toFixed(1)+'¢</span></div>'+
+    (txCharge>0?'<div class="price-row-item"><span class="prl">Transmission</span><span class="prv">'+txCharge.toFixed(2)+'¢</span></div>':'')+
+    '<div class="price-row-item"><span class="prl">Delivery / distribution</span><span class="prv">'+delivCharge.toFixed(2)+'¢ '+(_isSummer?'(summer)':'(non-summer)')+'</span></div>'+
     '<div class="price-row-item"><span class="prl">Taxes &amp; environmental</span><span class="prv">~'+taxEst.toFixed(2)+'¢</span></div>'+
     '<div class="price-row-item total-row"><span class="prl">Total all-in</span><span class="prv" style="color:'+r.color+'">~'+allin.toFixed(1)+'¢/kWh</span></div>'+
-    '<div class="season-note">'+(m>=5&&m<=8
-      ?'☀️ <strong>Summer (Jun 1–Sep 30):</strong> +11–12¢ adder. Capacity charge also applies — your monthly charge is set by your 5 highest peak-hour draws (PJM, summer weekday afternoons). Prices auto-switch Oct 1.'
-      :'❄️ <strong>Non-summer (Oct 1–May 31):</strong> +9.5–10.5¢ adder. Lower delivery fee. Prices auto-switch Jun 1.')+'</div>'+
+    '<div class="season-note">'+
+      (_isSummer
+        ?'☀️ <strong>Summer rate active ('+sumLabel+'):</strong> Higher delivery fee. '+
+          (m.capRisk?m.market+' capacity charge set by peak-hour draws. Prices auto-switch after '+sumLabel.split('–')[1]+'.':''  )
+        :(m.sumStart
+          ?'❄️ <strong>Non-summer rate active:</strong> Lower delivery fee. Switches to summer rate '+sumLabel+'.'
+          :'ℹ️ No seasonal delivery distinction for '+m.utility+'.')
+      )+
+    '</div>'+
   '</div>';
   grid.innerHTML=c1+c2;
 }
@@ -664,8 +961,18 @@ function renderChart() {
   var isHourly=(_chartMode==='hourly');
 
   if (isHourly) {
-    _hourly.forEach(function(d){if(d.p!==null)data.push({x:d.h,p:d.p,label:hLabel(d.h),isCurr:d.h===ch,partial:d.partial});});
-    noteEl.textContent='Hourly averages from PJM real-time 5-min feed via ComEd CHP API. Current hour patched with currenthouraverage endpoint (matches ComEd website). Hover dots for exact value.';
+    // Include ALL 24 hours — nulls will be drawn as gaps, not skipped
+    for (var hi=0; hi<24; hi++) {
+      var hd = _hourly[hi];
+      data.push({
+        h: hi,
+        p: (hd && hd.p !== null) ? hd.p : null,
+        label: hLabel(hi),
+        isCurr: hi === ch,
+        partial: hd ? hd.partial : false
+      });
+    }
+    noteEl.textContent='Hourly averages computed from ComEd 5-min feed. Each bar = one calendar hour (0–23). Current hour outlined. Hover dots for exact value.';
     xlabels.innerHTML='<span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>11 PM</span>';
   } else {
     var rev=_fiveMin.slice().reverse();
@@ -679,7 +986,9 @@ function renderChart() {
     xlabels.innerHTML='<span>24h ago</span><span>18h ago</span><span>12h ago</span><span>6h ago</span><span>now</span>';
   }
 
-  if (!data.length) {
+  // Check we have at least some valid prices
+  var validPrices = data.filter(function(d){return d.p !== null;}).map(function(d){return d.p;});
+  if (!validPrices.length) {
     container.innerHTML='<div style="color:var(--text3);font-size:13px;padding:1rem">Waiting for data…</div>';
     yAxisEl.innerHTML='';
     return;
@@ -688,17 +997,21 @@ function renderChart() {
   var W=container.clientWidth||600, H=180;
   var PAD={top:14,right:12,bottom:8,left:4};
   var chartW=W-PAD.left-PAD.right, chartH=H-PAD.top-PAD.bottom;
-
-  var prices=data.map(function(d){return d.p;});
-  var maxP=Math.max.apply(null,prices.concat([8]));
-  var minP=Math.min.apply(null,prices.concat([0]));
-  var range=maxP-minP; if(range<1)range=1;
   var n=data.length;
 
-  function px(i){return PAD.left+(i/(n>1?n-1:1))*chartW;}
-  function py(p){return PAD.top+chartH-(((p-minP)/range)*chartH);}
+  var maxP=Math.max.apply(null,validPrices.concat([8]));
+  var minP=Math.min.apply(null,validPrices.concat([0]));
+  var range=maxP-minP; if(range<1)range=1;
 
-  // Y-axis ticks (5 ticks)
+  // For hourly: x position is always based on hour/23 so the axis is correctly scaled 0→23
+  // For 5-min: x position is index/n-1
+  function px(d, i) {
+    if (isHourly) return PAD.left + (d.h / 23) * chartW;
+    return PAD.left + (i / (n>1?n-1:1)) * chartW;
+  }
+  function py(p) { return PAD.top + chartH - (((p-minP)/range)*chartH); }
+
+  // Y-axis ticks
   var tickCount=5, yHTML='';
   for(var ti=tickCount;ti>=0;ti--){
     var tv=minP+(maxP-minP)*ti/tickCount;
@@ -715,49 +1028,84 @@ function renderChart() {
     svg+='<line x1="'+PAD.left+'" y1="'+gy.toFixed(1)+'" x2="'+(W-PAD.right)+'" y2="'+gy.toFixed(1)+'" stroke="var(--border)" stroke-width="'+(gi===0||gi===tickCount?1:0.5)+'"/>';
   }
 
+  // Hour labels on x-axis for hourly mode (midnight, 6AM, noon, 6PM, 11PM)
+  if (isHourly) {
+    var xTickHours = [0, 6, 12, 18, 23];
+    xTickHours.forEach(function(ht){
+      var tx = PAD.left + (ht/23)*chartW;
+      svg += '<line x1="'+tx.toFixed(1)+'" y1="'+(PAD.top+chartH)+'" x2="'+tx.toFixed(1)+'" y2="'+(PAD.top+chartH+4)+'" stroke="var(--border2)" stroke-width="1"/>';
+    });
+  }
+
   // Zero line (if negative prices exist)
   if (minP<0) {
     var zy=py(0);
     svg+='<line x1="'+PAD.left+'" y1="'+zy.toFixed(1)+'" x2="'+(W-PAD.right)+'" y2="'+zy.toFixed(1)+'" stroke="var(--border2)" stroke-width="1.5" stroke-dasharray="4,3"/>';
   }
 
-  // Gradient fill area — segment by color
-  // Build path
-  var areaPath='M '+px(0).toFixed(1)+' '+py(data[0].p).toFixed(1);
-  for(var ai=1;ai<n;ai++) areaPath+=' L '+px(ai).toFixed(1)+' '+py(data[ai].p).toFixed(1);
-  var zeroY=Math.min(py(0),PAD.top+chartH);
-  areaPath+=' L '+px(n-1).toFixed(1)+' '+zeroY.toFixed(1)+' L '+px(0).toFixed(1)+' '+zeroY.toFixed(1)+' Z';
-
-  // Pick dominant color for gradient
-  var midP=prices[Math.floor(n/2)];
+  // Gradient area — only connect segments where both endpoints have data
+  var gradId='lcg'+Math.floor(Math.random()*99999);
+  var midP=validPrices[Math.floor(validPrices.length/2)];
   var gradCol=lineColor(midP);
-  var gradId='lcg'+Date.now();
-  svg+='<defs><linearGradient id="'+gradId+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+gradCol+'" stop-opacity="0.18"/><stop offset="100%" stop-color="'+gradCol+'" stop-opacity="0.01"/></linearGradient></defs>';
-  svg+='<path d="'+areaPath+'" fill="url(#'+gradId+')" />';
+  svg+='<defs><linearGradient id="'+gradId+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+gradCol+'" stop-opacity="0.15"/><stop offset="100%" stop-color="'+gradCol+'" stop-opacity="0.01"/></linearGradient></defs>';
 
-  // Line — segment by color change
-  for(var li=0;li<n-1;li++){
-    var col=lineColor(data[li].p);
-    var op=(!isHourly&&!data[li].isRecent)?0.4:1;
-    svg+='<line x1="'+px(li).toFixed(1)+'" y1="'+py(data[li].p).toFixed(1)+'" x2="'+px(li+1).toFixed(1)+'" y2="'+py(data[li+1].p).toFixed(1)+'" stroke="'+col+'" stroke-width="2" stroke-linecap="round" opacity="'+op+'"/>';
+  // Build area path — skip gaps
+  var areaPath='';
+  var inSegment=false;
+  var zeroY=Math.min(py(0), PAD.top+chartH);
+  for (var ai=0; ai<n; ai++) {
+    if (data[ai].p !== null) {
+      var ax=px(data[ai],ai), ay=py(data[ai].p);
+      if (!inSegment) { areaPath+='M '+ax.toFixed(1)+' '+ay.toFixed(1); inSegment=true; }
+      else             { areaPath+=' L '+ax.toFixed(1)+' '+ay.toFixed(1); }
+    } else {
+      if (inSegment) { areaPath+=' L '+px(data[ai-1],ai-1).toFixed(1)+' '+zeroY.toFixed(1)+' Z '; inSegment=false; }
+    }
+  }
+  if (inSegment && n>0) {
+    var lastD=data[n-1];
+    // close area
+    var closePath=areaPath;
+    // find last valid
+    for(var ci=n-1;ci>=0;ci--){if(data[ci].p!==null){closePath+=' L '+px(data[ci],ci).toFixed(1)+' '+zeroY.toFixed(1)+' Z';break;}}
+    svg+='<path d="'+closePath+'" fill="url(#'+gradId+')" />';
+  }
+
+  // Line segments — color by price, skip null gaps
+  for(var li=0; li<n-1; li++){
+    if (data[li].p !== null && data[li+1].p !== null) {
+      var col=lineColor(data[li].p);
+      var op=(!isHourly && !data[li].isRecent)?0.4:1;
+      svg+='<line x1="'+px(data[li],li).toFixed(1)+'" y1="'+py(data[li].p).toFixed(1)+
+           '" x2="'+px(data[li+1],li+1).toFixed(1)+'" y2="'+py(data[li+1].p).toFixed(1)+
+           '" stroke="'+col+'" stroke-width="2" stroke-linecap="round" opacity="'+op+'"/>';
+    }
   }
 
   // Dots + tooltips
-  var SKIP=isHourly?1:Math.max(1,Math.floor(n/48)); // show ~48 dots max for 5-min
-  for(var di=0;di<n;di+=SKIP){
+  var SKIP=isHourly?1:Math.max(1,Math.floor(n/48));
+  for(var di=0; di<n; di+=SKIP){
     var d=data[di];
+    if (d.p === null) continue;
     var col2=lineColor(d.p);
-    var isCurr=isHourly&&d.isCurr;
+    var isCurr=isHourly && d.isCurr;
     var r2=isCurr?5:3;
     var sw=isCurr?2:1.5;
-    var op2=(!isHourly&&!d.isRecent)?0.45:1;
+    var op2=(!isHourly && !d.isRecent)?0.45:1;
     var tip=d.label+': '+d.p.toFixed(1)+'¢'+(d.partial?' (in progress)':'');
-    svg+='<circle cx="'+px(di).toFixed(1)+'" cy="'+py(d.p).toFixed(1)+'" r="'+r2+'" fill="'+col2+'" stroke="var(--surface)" stroke-width="'+sw+'" opacity="'+op2+'" class="chart-tooltip-dot"><title>'+tip+'</title></circle>';
+    svg+='<circle cx="'+px(d,di).toFixed(1)+'" cy="'+py(d.p).toFixed(1)+'" r="'+r2+
+         '" fill="'+col2+'" stroke="var(--surface)" stroke-width="'+sw+'" opacity="'+op2+
+         '" class="chart-tooltip-dot"><title>'+tip+'</title></circle>';
   }
-  // Always show last dot
-  if (n>0) {
-    var last=data[n-1], lc=lineColor(last.p);
-    svg+='<circle cx="'+px(n-1).toFixed(1)+'" cy="'+py(last.p).toFixed(1)+'" r="5" fill="'+lc+'" stroke="var(--surface)" stroke-width="2"><title>'+last.label+': '+last.p.toFixed(1)+'¢'+(last.partial?' (in progress)':'')+'</title></circle>';
+  // Always show last valid dot prominently
+  for(var lvi=n-1;lvi>=0;lvi--){
+    if(data[lvi].p!==null){
+      var lc=lineColor(data[lvi].p);
+      svg+='<circle cx="'+px(data[lvi],lvi).toFixed(1)+'" cy="'+py(data[lvi].p).toFixed(1)+
+           '" r="5" fill="'+lc+'" stroke="var(--surface)" stroke-width="2">'+
+           '<title>'+data[lvi].label+': '+data[lvi].p.toFixed(1)+'¢'+(data[lvi].partial?' (in progress)':'')+'</title></circle>';
+      break;
+    }
   }
 
   svg+='</svg>';
@@ -847,50 +1195,200 @@ function addCustomApp() {
 }
 
 // ══════════════════════════════════
-// PANEL CHECKER  ← NaN fix: store kw as number attr, parse cleanly
+// PANEL CHECKER — full rebuild
 // ══════════════════════════════════
-function rebuildPanelToggles() {
-  var row=document.getElementById('tog-row');
-  var apps=getActiveApps();
-  var html='';
-  apps.forEach(function(a){
-    var on=_panelOn.has(a.id);
-    // Store kw as a pure numeric data attribute — no unit suffix
-    html+='<button class="tog'+(on?' on':'')+'" data-id="'+a.id+'" data-kw="'+Number(a.kw)+'" onclick="togglePanel(this)">'+
-      a.icon+' '+a.name+' ('+a.kw+'kW)</button>';
-  });
-  row.innerHTML=html;
+
+// Default panel devices with industry-standard wattage
+var PANEL_DEVICE_LIBRARY = [
+  {id:'p_tesla',   icon:'🔋', name:'Tesla / EV Charger',   watts:11500, on:false},
+  {id:'p_dryer',   icon:'🌀', name:'Electric Dryer',        watts:5000,  on:false},
+  {id:'p_wh',      icon:'🚿', name:'Water Heater',          watts:4500,  on:false},
+  {id:'p_hvac',    icon:'❄️', name:'HVAC / Central AC',     watts:4500,  on:true},
+  {id:'p_oven',    icon:'🍳', name:'Electric Oven',         watts:2400,  on:false},
+  {id:'p_microwave',icon:'📡',name:'Microwave',             watts:1200,  on:false},
+  {id:'p_washer',  icon:'👕', name:'Washing Machine',       watts:500,   on:false},
+  {id:'p_fridge',  icon:'🧊', name:'Refrigerator',          watts:150,   on:true},
+  {id:'p_dishwash',icon:'🍽️',name:'Dishwasher',            watts:1800,  on:false},
+  {id:'p_lights',  icon:'💡', name:'Lighting (all)',        watts:300,   on:true},
+  {id:'p_tv',      icon:'📺', name:'TV + Entertainment',    watts:200,   on:false},
+  {id:'p_computer',icon:'🖥️',name:'Desktop Computer',      watts:300,   on:false},
+  {id:'p_pool',    icon:'🏊', name:'Pool Pump',             watts:1500,  on:false},
+  {id:'p_hotub',   icon:'♨️', name:'Hot Tub / Spa',        watts:3500,  on:false},
+];
+
+function getPanelDevices() {
+  return lsGet('panel_devices', PANEL_DEVICE_LIBRARY.map(function(d){return Object.assign({},d);}));
+}
+function setPanelDevices(d) { lsSet('panel_devices', d); }
+function getPanelAmps()     { return lsGet('panel_amps', 100); }
+function setPanelAmps(a)    { lsSet('panel_amps', parseInt(a)); }
+
+function panelMaxKw(amps)   { return amps * 240 / 1000; }
+function panelSafeKw(amps)  { return panelMaxKw(amps) * 0.8; }
+
+function buildPanelHTML() {
+  var devices = getPanelDevices();
+  var amps    = getPanelAmps();
+  var maxKw   = panelMaxKw(amps);
+  var safeKw  = panelSafeKw(amps);
+
+  // Sync select
+  var sel = document.getElementById('panel-amps');
+  if (sel) sel.value = String(amps);
+
+  // Update bar labels
+  var safeEl = document.getElementById('pbar-safe-label');
+  var maxEl  = document.getElementById('pbar-max-label');
+  if (safeEl) safeEl.textContent = safeKw.toFixed(1)+' kW safe (80%)';
+  if (maxEl)  maxEl.textContent  = maxKw.toFixed(1)+' kW max';
+  if (document.getElementById('pbar-marker')) {
+    document.getElementById('pbar-marker').style.left = '80%';
+  }
+
+  // Build device rows
+  var html = '';
+  var onDevices  = devices.filter(function(d){return d.on;});
+  var offDevices = devices.filter(function(d){return !d.on;});
+
+  function deviceRow(d, idx) {
+    var realIdx = devices.indexOf(d);
+    var kw = (d.watts / 1000);
+    var kwh = kw.toFixed(2);
+    var costStr = _price !== null
+      ? '$'+(kw * Math.abs(_price) / 100).toFixed(4)+'/hr'
+      : '';
+    var costCol = _price !== null
+      ? (d.on ? (_price < 0 ? 'var(--blue)' : _price < 8 ? 'var(--green)' : _price < 14 ? 'var(--amber)' : 'var(--red)') : 'var(--text3)')
+      : 'var(--text3)';
+    return '<div class="pd-row'+(d.on?' pd-on':'')+'">'+
+      '<button class="pd-toggle'+(d.on?' on':'')+'" onclick="togglePanelDevice('+realIdx+')" title="'+(d.on?'Turn off':'Turn on')+'"></button>'+
+      '<span class="pd-icon">'+d.icon+'</span>'+
+      '<span class="pd-name">'+d.name+'</span>'+
+      '<div class="pd-watts-wrap">'+
+        '<input class="pd-watts-input" type="number" min="1" max="100000" value="'+d.watts+'" '+
+          'onchange="updatePanelDeviceWatts('+realIdx+',this.value)" '+
+          'onclick="this.select()" title="Click to edit wattage"/>'+
+        '<span class="pd-unit">W</span>'+
+      '</div>'+
+      '<span class="pd-kwh">'+kwh+' kW</span>'+
+      '<span class="pd-cost" style="color:'+costCol+'">'+costStr+'</span>'+
+      '<button class="pd-del" onclick="removePanelDevice('+realIdx+')" title="Remove">×</button>'+
+    '</div>';
+  }
+
+  if (onDevices.length) {
+    html += '<div class="pd-section-lbl">🟢 Currently running ('+onDevices.length+' device'+(onDevices.length>1?'s':'')+')</div>';
+    onDevices.forEach(function(d){ html += deviceRow(d); });
+  }
+  if (offDevices.length) {
+    html += '<div class="pd-section-lbl" style="margin-top:6px">⚫ Off / not running</div>';
+    offDevices.forEach(function(d){ html += deviceRow(d); });
+  }
+
+  var el = document.getElementById('panel-devices');
+  if (el) el.innerHTML = html;
+
   updatePanel();
 }
 
-function togglePanel(btn) {
-  var id=btn.dataset.id;
-  if (_panelOn.has(id)){_panelOn.delete(id);btn.classList.remove('on');}
-  else{_panelOn.add(id);btn.classList.add('on');}
+function togglePanelDevice(idx) {
+  var devices = getPanelDevices();
+  if (devices[idx]) { devices[idx].on = !devices[idx].on; setPanelDevices(devices); }
+  buildPanelHTML();
+}
+
+function updatePanelDeviceWatts(idx, val) {
+  var w = parseInt(val);
+  if (isNaN(w) || w < 1) return;
+  var devices = getPanelDevices();
+  if (devices[idx]) { devices[idx].watts = w; setPanelDevices(devices); }
   updatePanel();
+}
+
+function removePanelDevice(idx) {
+  var devices = getPanelDevices();
+  devices.splice(idx, 1);
+  setPanelDevices(devices);
+  buildPanelHTML();
+}
+
+function openPanelAddDevice() {
+  ['pd-icon','pd-name','pd-watts'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('panel-add-overlay').classList.add('open');
+}
+function closePanelAddDevice() {
+  document.getElementById('panel-add-overlay').classList.remove('open');
+}
+function addPanelDevice() {
+  var icon  = document.getElementById('pd-icon').value.trim()  || '🔌';
+  var name  = document.getElementById('pd-name').value.trim();
+  var watts = parseInt(document.getElementById('pd-watts').value);
+  if (!name || isNaN(watts) || watts < 1) {
+    alert('Please enter a device name and wattage.');
+    return;
+  }
+  var devices = getPanelDevices();
+  devices.push({id:'custom_'+Date.now(), icon:icon, name:name, watts:watts, on:true});
+  setPanelDevices(devices);
+  closePanelAddDevice();
+  buildPanelHTML();
 }
 
 function updatePanel() {
-  var total=0;
-  document.querySelectorAll('#tog-row .tog.on').forEach(function(b){
-    var kw=parseFloat(b.getAttribute('data-kw'));
-    if (!isNaN(kw)) total+=kw;
-  });
-  total=Math.round(total*10)/10;
-  if (isNaN(total)) total=0;
-  var pct=(total/24*100).toFixed(1);
-  var safe=total<=19.2, over=total>24;
-  var pc=over?'var(--red)':(safe?'var(--green)':'var(--amber)');
-  var pb=over?'var(--red-bg)':(safe?'var(--green-bg)':'var(--amber-bg)');
-  var msg=over
-    ?'🚨 OVER CAPACITY — '+total+' kW · Breaker trip risk! Turn something off now.'
-    :!safe?'⚠ Over 80% safe limit — '+total+' kW running (max safe: 19.2 kW)'
-    :'✓ Safe — '+total+' kW running ('+pct+'% of 24 kW panel)';
-  var res=document.getElementById('panel-result');
-  var fill=document.getElementById('pbar-fill');
-  if (res){res.style.background=pb;res.style.color=pc;res.textContent=msg;}
-  if (fill){fill.style.width=Math.min(100,total/24*100).toFixed(1)+'%';fill.style.background=pc;}
+  var devices = getPanelDevices();
+  var amps    = parseInt(document.getElementById('panel-amps')? document.getElementById('panel-amps').value : getPanelAmps()) || 100;
+  setPanelAmps(amps);
+
+  var maxKw  = panelMaxKw(amps);
+  var safeKw = panelSafeKw(amps);
+
+  var total = 0;
+  devices.forEach(function(d){ if (d.on) total += (d.watts / 1000); });
+  total = Math.round(total * 10) / 10;
+  if (isNaN(total)) total = 0;
+
+  var pct  = (total / maxKw * 100).toFixed(1);
+  var safe = total <= safeKw;
+  var over = total > maxKw;
+  var pc   = over ? 'var(--red)' : (safe ? 'var(--green)' : 'var(--amber)');
+  var pb   = over ? 'var(--red-bg)' : (safe ? 'var(--green-bg)' : 'var(--amber-bg)');
+
+  var onCount = devices.filter(function(d){return d.on;}).length;
+  var msg = over
+    ? '🚨 OVER CAPACITY — '+total+' kW on a '+amps+'A panel (max '+maxKw.toFixed(1)+' kW) · Breaker trip risk! Turn something off now.'
+    : !safe
+    ? '⚠️ Over 80% safe limit — '+total+' kW of '+safeKw.toFixed(1)+' kW safe max · Consider turning something off.'
+    : onCount === 0
+    ? 'Toggle devices on above to check your panel load.'
+    : '✅ Safe — '+total+' kW running ('+pct+'% of '+maxKw.toFixed(1)+' kW panel)';
+
+  var res  = document.getElementById('panel-result');
+  var fill = document.getElementById('pbar-fill');
+  if (res)  { res.style.background = pb; res.style.color = pc; res.textContent = msg; }
+  if (fill) {
+    fill.style.width      = Math.min(100, total/maxKw*100).toFixed(1)+'%';
+    fill.style.background = pc;
+  }
+
+  // Cost note
+  var note = document.getElementById('panel-cost-note');
+  if (note && _price !== null && total > 0) {
+    var allin = getAllInPrice(_price);
+    var supCost  = (total * Math.abs(_price) / 100).toFixed(4);
+    var allinCost= (total * Math.abs(allin||0) / 100).toFixed(4);
+    var earn = _price < 0;
+    note.innerHTML = earn
+      ? '💰 At current price ('+_price.toFixed(1)+'¢/kWh), running these '+onCount+' device'+( onCount!==1?'s':'')+' is <strong>earning you $'+supCost+'/hr</strong> in supply credits!'
+      : 'At '+_price.toFixed(1)+'¢/kWh supply: <strong>$'+supCost+'/hr</strong> supply · <strong>$'+allinCost+'/hr all-in</strong> for '+onCount+' device'+(onCount!==1?'s':'')+' combined.';
+  } else if (note) {
+    note.textContent = '';
+  }
 }
+
+// Keep old rebuildPanelToggles as a shim so existing callers still work
+function rebuildPanelToggles() { buildPanelHTML(); }
 
 // ══════════════════════════════════
 // WIZARD
@@ -941,66 +1439,181 @@ function wizBack(step) {
 function skipWizard() {
   setOnboarded();
   document.getElementById('wizard-overlay').classList.remove('open');
-  renderAppliances(_price);rebuildPanelToggles();
+  applyMarket(getLocation().zip);
+  renderFooter();
+  renderAppliances(_price);
+  rebuildPanelToggles();
+  load();
 }
 function finishWizard() {
   setOnboarded();
   document.getElementById('wizard-overlay').classList.remove('open');
-  renderAppliances(_price);rebuildPanelToggles();
+  applyMarket(getLocation().zip);
+  renderFooter();
+  renderAppliances(_price);
+  rebuildPanelToggles();
+  load();
 }
 
 // ══════════════════════════════════
 // DATA FETCHING
 // ══════════════════════════════════
+
+// Build datestring in ComEd API format: YYYYMMDDhhmm (Chicago local time)
+function comEdDateStr(date) {
+  // Extract Chicago local time components directly
+  var parts = {};
+  ['year','month','day','hour','minute'].forEach(function(unit) {
+    parts[unit] = parseInt(
+      date.toLocaleString('en-US', {timeZone:'America/Chicago', [unit]:'2-digit'})
+    );
+  });
+  // month is 1-indexed from toLocaleString
+  var y  = date.toLocaleString('en-US', {timeZone:'America/Chicago', year:'numeric'});
+  var mo = date.toLocaleString('en-US', {timeZone:'America/Chicago', month:'2-digit'});
+  var d  = date.toLocaleString('en-US', {timeZone:'America/Chicago', day:'2-digit'});
+  var h  = date.toLocaleString('en-US', {timeZone:'America/Chicago', hour:'2-digit', hour12:false}).replace('24','00');
+  var mi = date.toLocaleString('en-US', {timeZone:'America/Chicago', minute:'2-digit'}).padStart(2,'0');
+  return y+mo+d+h+mi;
+}
+
+// Today's midnight in Chicago as YYYYMMDD0000
+function comEdMidnightStr() {
+  var now = new Date();
+  var y   = now.toLocaleString('en-US', {timeZone:'America/Chicago', year:'numeric'});
+  var mo  = now.toLocaleString('en-US', {timeZone:'America/Chicago', month:'2-digit'});
+  var d   = now.toLocaleString('en-US', {timeZone:'America/Chicago', day:'2-digit'});
+  return y+mo+d+'0000';
+}
+
 function processHourly(feed) {
-  var hourly={};
-  feed.forEach(function(d){
-    var dt=new Date(parseInt(d.millisUTC));
-    var lh=parseInt(dt.toLocaleString('en-US',{hour:'numeric',hour12:false,timeZone:'America/Chicago'}).replace('24','0'));
-    if (!hourly[lh]) hourly[lh]={sum:0,n:0};
-    hourly[lh].sum+=parseFloat(d.price);
+  // feed is already today-only; group by Chicago local hour
+  var hourly = {};
+  feed.forEach(function(d) {
+    var dt = new Date(parseInt(d.millisUTC));
+    var localStr = dt.toLocaleString('en-US', {hour:'numeric', hour12:false, timeZone:'America/Chicago'});
+    var lh = parseInt(localStr.replace('24','0'));
+    if (!hourly[lh]) hourly[lh] = {sum:0, n:0};
+    hourly[lh].sum += parseFloat(d.price);
     hourly[lh].n++;
   });
-  var result=[];
-  for(var h=0;h<24;h++){
-    if (hourly[h]&&hourly[h].n>=1) result.push({h:h,p:Math.round(hourly[h].sum/hourly[h].n*10)/10,partial:hourly[h].n<12});
-    else result.push({h:h,p:null});
+  var result = [];
+  for (var h=0; h<24; h++) {
+    if (hourly[h] && hourly[h].n >= 1)
+      result.push({h:h, p:Math.round(hourly[h].sum/hourly[h].n*10)/10, partial:hourly[h].n<12});
+    else
+      result.push({h:h, p:null});
   }
   return result;
 }
 
+function showNoApiMessage(m) {
+  var isTOU = m && m.apiType==='tou_not_real_time';
+  var msg = isTOU
+    ? '⏰ <strong>'+m.utility+' uses Time-of-Use pricing, not live real-time rates.</strong> Peak hours are typically 4–9 PM daily. The all-in adder breakdown below reflects your utility\'s fixed rate components.'
+    : '📊 <strong>No live public API for '+(m?m.utility:'this utility')+'.</strong> Adder estimates below are based on current regulatory filings. Check your utility\'s website for today\'s prices.';
+  var statsEl = document.getElementById('stats-row');
+  if (statsEl) statsEl.innerHTML =
+    '<div style="background:var(--blue-bg);border:1px solid var(--blue)44;border-radius:var(--radius-lg);padding:12px 16px;font-size:13px;color:var(--text2);grid-column:1/-1">'+
+      msg+'<br><span style="font-size:11px;color:var(--text3);margin-top:4px;display:block">All-in adder still applied correctly for your market below.</span>'+
+    '</div>';
+  renderMarketBanner();
+  renderPriceBreakdown(null);
+  document.getElementById('price-grid').style.display='none';
+}
+
 async function load() {
+  var loc = getLocation();
+  applyMarket(loc.zip);
+  var m = _market || MARKET_DB[0];
+
+  if (m.apiType !== 'live_json') {
+    showNoApiMessage(m);
+    renderMarketBanner();
+    return;
+  }
+
   try {
-    var res=await Promise.all([
-      fetch('https://hourlypricing.comed.com/api?type=currenthouraverage').then(function(r){return r.json();}),
-      fetch('https://hourlypricing.comed.com/api?type=5minutefeed').then(function(r){return r.json();})
+    var now   = new Date();
+    var dateStart = comEdMidnightStr();              // today 00:00 Chicago
+    var dateEnd   = comEdDateStr(now);               // now in Chicago time
+
+    var todayUrl = 'https://hourlypricing.comed.com/api?type=5minutefeed&datestart='+dateStart+'&dateend='+dateEnd;
+
+    var res = await Promise.all([
+      fetch(m.api).then(function(r){return r.json();}),         // current hour average
+      fetch(todayUrl).then(function(r){return r.json();}),      // today midnight→now (hourly chart)
+      fetch(m.api5m).then(function(r){return r.json();})        // rolling 24h (5-min tab)
     ]);
-    var j1=res[0],j2=res[1];
-    _price=(j1&&j1.length)?Math.round(parseFloat(j1[0].price)*10)/10:null;
-    _fiveMin=j2||[];
-    _hourly=processHourly(_fiveMin);
+
+    var j1=res[0], todayFeed=res[1]||[], j3=res[2]||[];
+
+    _price   = (j1 && j1.length) ? Math.round(parseFloat(j1[0].price)*10)/10 : null;
+    _fiveMin = j3;  // rolling 24h — used only for the 5-min chart tab
+    _hourly  = processHourly(todayFeed);  // today-only — correct hourly chart
+
     // Patch current hour with the authoritative currenthouraverage value
-    if (_price!==null){var ch=nowCT();_hourly[ch]={h:ch,p:_price,partial:true};}
-    renderStats(_price,_hourly);
+    if (_price !== null) {
+      var ch = nowCT();
+      _hourly[ch] = {h:ch, p:_price, partial:true};
+    }
+
+    renderStats(_price, _hourly);
     renderChart();
     renderAppliances(_price);
+    buildPanelHTML(); // refresh cost-per-hour with live price
+
   } catch(e) {
-    document.getElementById('stats-row').innerHTML=
-      '<div style="color:var(--text3);font-size:13px;padding:.5rem 0">Could not reach ComEd API. '+
-      '<a href="https://hourlypricing.comed.com/live-prices/" target="_blank" style="color:var(--blue)">View on ComEd ↗</a></div>';
+    document.getElementById('stats-row').innerHTML =
+      '<div style="color:var(--text3);font-size:13px;padding:.5rem 0">Could not reach '+m.utility+' API. '+
+      '<a href="'+(m.program_url||'#')+'" target="_blank" style="color:var(--blue)">View on utility site ↗</a></div>';
   }
 }
 
 // ══════════════════════════════════
 // INIT
 // ══════════════════════════════════
+function renderFooter() {
+  var m = _market || MARKET_DB[0];
+  var el = document.getElementById('footer-links');
+  if (!el) return;
+  var isComEd = m.apiType==='live_json';
+  var progUrl = m.program_url || '#';
+  var html = '';
+  if (isComEd) {
+    html += '<a href="https://hourlypricing.comed.com/live-prices/" target="_blank">Live Prices ↗</a>'+
+            '<a href="https://hourlypricing.comed.com/live-prices/day-ahead-prices/" target="_blank">Tomorrow ↗</a>'+
+            '<a href="https://hourlypricing.comed.com/live-prices/five-minute-prices/" target="_blank">5-Min Detail ↗</a>';
+  } else {
+    html += '<a href="'+progUrl+'" target="_blank">'+m.utility+' Pricing ↗</a>';
+    if (m.market==='PJM')   html += '<a href="https://www.pjm.com/markets-and-operations/energy/real-time" target="_blank">PJM Real-Time ↗</a>';
+    if (m.market==='ERCOT') html += '<a href="https://www.ercot.com/content/cdr/html/real_time_spp" target="_blank">ERCOT Prices ↗</a>';
+    if (m.market==='NYISO') html += '<a href="https://www.nyiso.com/real-time-dashboard" target="_blank">NYISO Dashboard ↗</a>';
+    if (m.market==='CAISO') html += '<a href="https://www.caiso.com/TodaysOutlook/Pages/prices.aspx" target="_blank">CAISO Prices ↗</a>';
+    if (m.market==='MISO')  html += '<a href="https://www.misoenergy.org/markets-and-operations/real-time--market-data/market-reports/" target="_blank">MISO Reports ↗</a>';
+  }
+  html += '<span class="note">'+(isComEd?'Auto-refreshes every 5 min':'Adders from verified 2025–2026 rate filings')+'</span>';
+  el.innerHTML = html;
+}
+
+// Resolve location & market first
+var _initLoc = getLocation();
+applyMarket(_initLoc.zip);
 renderLocLabel();
-rebuildPanelToggles();
+renderFooter();
+
+// Sync panel amps selector from saved preference
+(function(){
+  var saved = getPanelAmps();
+  var sel = document.getElementById('panel-amps');
+  if (sel) sel.value = String(saved);
+})();
+
+buildPanelHTML();
 
 if (!hasOnboarded()) {
-  var defLoc=getLocation();
-  document.getElementById('wiz-city').value=defLoc.city;
-  document.getElementById('wiz-zip').value=defLoc.zip;
+  document.getElementById('wiz-city').value=_initLoc.city;
+  document.getElementById('wiz-zip').value=_initLoc.zip;
   buildWizardApps();
   document.getElementById('wizard-overlay').classList.add('open');
 } else {
