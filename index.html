@@ -261,6 +261,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   box-shadow:0 1px 3px rgba(0,0,0,.08);
 }
 
+/* Notification bell */
+.notif-btn{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:20px;padding:6px 11px;font-size:16px;
+  cursor:pointer;transition:all .15s;line-height:1;
+  position:relative;
+}
+.notif-btn:hover{border-color:var(--blue);transform:scale(1.05)}
+.notif-btn.active{border-color:var(--green-mid);background:var(--green-bg)}
+.notif-btn.active::after{
+  content:'';position:absolute;top:4px;right:4px;
+  width:7px;height:7px;border-radius:50%;background:var(--green-mid);
+  border:1.5px solid var(--surface);
+}
+.notif-btn.alerting::after{background:var(--red);}
+@keyframes bell-ring{0%,100%{transform:rotate(0)}15%{transform:rotate(15deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-6deg)}75%{transform:rotate(3deg)}}
+.notif-btn.ringing{animation:bell-ring .6s ease}
+
+/* Notification perm banners */
+.perm-granted{background:var(--green-bg);color:var(--green);border:1px solid var(--green-mid)33;border-radius:var(--radius);padding:8px 12px;font-size:12px;font-weight:600}
+.perm-denied{background:var(--red-bg);color:var(--red);border:1px solid var(--red)33;border-radius:var(--radius);padding:8px 12px;font-size:12px;font-weight:600}
+.perm-default{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue)33;border-radius:var(--radius);padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer}
+
 /* panel footer */
 
 .footer{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
@@ -344,6 +367,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
     <div class="hdr-r">
       <button class="loc-pill" onclick="openLocModal()" id="loc-btn">📍 Loading…</button>
+      <button class="notif-btn" id="notif-btn" onclick="openNotifModal()" title="Price alert settings">🔔</button>
       <div class="rtime" id="rtime"></div>
     </div>
   </div>
@@ -493,6 +517,82 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <a href="https://hourlypricing.comed.com/live-prices/day-ahead-prices/" target="_blank">Tomorrow ↗</a>
     <a href="https://hourlypricing.comed.com/live-prices/five-minute-prices/" target="_blank">5-Min Detail ↗</a>
     <span class="note">Auto-refreshes every 5 min</span>
+  </div>
+</div>
+
+<!-- ─── NOTIFICATION SETTINGS MODAL ─── -->
+<div class="overlay" id="notif-overlay">
+  <div class="modal" style="max-width:400px">
+    <h2>🔔 Price Alerts</h2>
+    <div class="msub">Get a browser notification when prices spike or are trending up. Works in Chrome and Edge on desktop.</div>
+
+    <!-- Permission status -->
+    <div id="notif-perm-banner" style="margin-bottom:16px"></div>
+
+    <!-- Enable toggle -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:0.5px solid var(--border)">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)">Enable price alerts</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">Checks every 5 min when the tab is open</div>
+      </div>
+      <button class="pd-toggle" id="notif-master-toggle" onclick="toggleNotifMaster()" title="Enable alerts"></button>
+    </div>
+
+    <!-- Threshold -->
+    <div style="padding:14px 0;border-bottom:0.5px solid var(--border)">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">🚨 High price threshold</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <input type="range" id="notif-threshold" min="5" max="100" step="1" value="20"
+          oninput="document.getElementById('notif-thresh-val').textContent=this.value+'¢'"
+          style="flex:1;accent-color:var(--red)"/>
+        <div style="font-size:16px;font-weight:800;color:var(--red);min-width:40px" id="notif-thresh-val">20¢</div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">Alert when supply price exceeds this value per kWh</div>
+    </div>
+
+    <!-- Trend alert -->
+    <div style="padding:14px 0;border-bottom:0.5px solid var(--border)">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--text2)">📈 Trending up alert</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">Alert when price rises by 5¢+ over last 3 readings</div>
+        </div>
+        <button class="pd-toggle" id="notif-trend-toggle" onclick="toggleNotifTrend()" title="Trend alerts"></button>
+      </div>
+    </div>
+
+    <!-- Capacity risk -->
+    <div style="padding:14px 0;border-bottom:0.5px solid var(--border)">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--text2)">⚡ Capacity risk window</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">Alert on summer weekdays 2–6 PM (PJM capacity hours)</div>
+        </div>
+        <button class="pd-toggle" id="notif-cap-toggle" onclick="toggleNotifCap()" title="Capacity alerts"></button>
+      </div>
+    </div>
+
+    <!-- Negative price -->
+    <div style="padding:14px 0">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--text2)">🎉 Negative price (free electricity!)</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">Alert when prices go below 0¢/kWh</div>
+        </div>
+        <button class="pd-toggle" id="notif-neg-toggle" onclick="toggleNotifNeg()" title="Negative price alerts"></button>
+      </div>
+    </div>
+
+    <!-- Test button -->
+    <div style="margin-top:4px;padding:10px;background:var(--surface2);border-radius:var(--radius);font-size:12px;color:var(--text3)">
+      <strong style="color:var(--text2)">Note:</strong> Your browser must allow notifications from this site. The tab must be open for alerts to fire — this is not a push service.
+    </div>
+
+    <div class="mactions">
+      <button class="btn btn-primary" onclick="saveNotifSettings()">Save Settings</button>
+      <button class="btn btn-ghost" onclick="closeNotifModal()">Cancel</button>
+      <button class="btn btn-ghost" onclick="sendTestNotif()" style="margin-left:auto">Send Test</button>
+    </div>
   </div>
 </div>
 
@@ -1721,11 +1821,267 @@ async function load() {
     renderChart();
     renderAppliances(_price);
     buildPanelHTML(); // refresh cost-per-hour with live price
+    checkPriceAlerts(_price); // fire browser notifications if warranted
 
   } catch(e) {
     document.getElementById('stats-row').innerHTML =
       '<div style="color:var(--text3);font-size:13px;padding:.5rem 0">Could not reach '+m.utility+' API. '+
       '<a href="'+(m.program_url||'#')+'" target="_blank" style="color:var(--blue)">View on utility site ↗</a></div>';
+  }
+}
+
+// ══════════════════════════════════
+// PRICE ALERT / NOTIFICATION ENGINE
+// ══════════════════════════════════
+
+// Settings storage
+function getNotifSettings() {
+  return lsGet('notif_settings', {
+    enabled:    false,
+    threshold:  20,
+    trendAlert: true,
+    capAlert:   true,
+    negAlert:   true
+  });
+}
+function setNotifSettings(s) { lsSet('notif_settings', s); }
+
+// Price history for trend detection (last 6 readings = 30 min)
+var _priceHistory = [];
+var _lastNotifTime = {}; // type → timestamp, prevents repeat spam
+
+function recordPriceHistory(price) {
+  if (price === null) return;
+  _priceHistory.push({price:price, ts:Date.now()});
+  if (_priceHistory.length > 12) _priceHistory.shift(); // keep last 12 (60 min)
+}
+
+// Returns ¢ change over last N readings (positive = rising)
+function priceTrend(n) {
+  if (_priceHistory.length < n) return 0;
+  var recent = _priceHistory.slice(-n);
+  return Math.round((recent[recent.length-1].price - recent[0].price) * 10) / 10;
+}
+
+// Cooldown: don't re-fire the same alert type within 20 min
+function canNotify(type) {
+  var last = _lastNotifTime[type] || 0;
+  return (Date.now() - last) > 20 * 60 * 1000;
+}
+function markNotified(type) { _lastNotifTime[type] = Date.now(); }
+
+// Fire a browser notification
+function fireNotif(title, body, icon, type) {
+  if (Notification.permission !== 'granted') return;
+  if (!canNotify(type)) return;
+  markNotified(type);
+  try {
+    var n = new Notification(title, {
+      body: body,
+      icon: icon || '',
+      badge: icon || '',
+      tag: 'energy-alert-'+type,   // replaces previous of same type
+      requireInteraction: type === 'spike' || type === 'cap', // stay until dismissed for urgent alerts
+    });
+    n.onclick = function() { window.focus(); n.close(); };
+  } catch(e) { console.warn('Notification failed:', e); }
+
+  // Ring the bell in the UI
+  var btn = document.getElementById('notif-btn');
+  if (btn) {
+    btn.classList.add('ringing', 'alerting');
+    setTimeout(function(){ btn.classList.remove('ringing'); }, 700);
+  }
+}
+
+// Main check — called after every load()
+function checkPriceAlerts(price) {
+  recordPriceHistory(price);
+  if (price === null) return;
+
+  var s = getNotifSettings();
+  if (!s.enabled) return;
+  if (Notification.permission !== 'granted') return;
+
+  var m = _market || MARKET_DB[0];
+  var allin = getAllInPrice(price);
+
+  // 1. High price threshold
+  if (price >= s.threshold) {
+    fireNotif(
+      '⚠️ High electricity price!',
+      'Supply: '+price.toFixed(1)+'¢/kWh · All-in: ~'+( allin||0).toFixed(1)+'¢/kWh\nDefer dryer, EV charger & water heater.',
+      '', 'spike'
+    );
+  }
+
+  // 2. Trending up — 5¢+ rise over last 3 readings (15 min)
+  if (s.trendAlert) {
+    var trend = priceTrend(3);
+    if (trend >= 5) {
+      fireNotif(
+        '📈 Prices rising fast',
+        'Up '+trend.toFixed(1)+'¢ in the last 15 min. Now: '+price.toFixed(1)+'¢/kWh. Consider deferring large loads.',
+        '', 'trend'
+      );
+    }
+  }
+
+  // 3. PJM capacity risk window
+  if (s.capAlert && _isSummer) {
+    var ch2 = nowCT();
+    var dow = new Date().getDay();
+    var capMonths = (m.capMonths || []);
+    var isCapRisk = m.capRisk && (dow>=1&&dow<=5) && ch2>=m.capHoursStart && ch2<m.capHoursEnd
+                   && capMonths.indexOf(new Date().getMonth()) !== -1;
+    if (isCapRisk) {
+      fireNotif(
+        '⚡ '+m.market+' Capacity Risk Window',
+        'Summer weekday 2–6 PM. Your annual capacity charge is set NOW.\nTurn off HVAC, EV charger, dryer & water heater.',
+        '', 'cap'
+      );
+    }
+  }
+
+  // 4. Negative price
+  if (s.negAlert && price < 0) {
+    fireNotif(
+      '🎉 Free electricity right now!',
+      'Price is '+price.toFixed(1)+'¢/kWh — run everything you can!\nEV charger, dryer, water heater — go!',
+      '', 'negative'
+    );
+  }
+}
+
+// ── Modal UI ──
+function openNotifModal() {
+  var s = getNotifSettings();
+
+  // Permission banner
+  renderPermBanner();
+
+  // Sync toggles
+  syncToggle('notif-master-toggle', s.enabled);
+  syncToggle('notif-trend-toggle',  s.trendAlert);
+  syncToggle('notif-cap-toggle',    s.capAlert);
+  syncToggle('notif-neg-toggle',    s.negAlert);
+
+  // Threshold slider
+  var slider = document.getElementById('notif-threshold');
+  var val    = document.getElementById('notif-thresh-val');
+  if (slider) slider.value = s.threshold;
+  if (val)    val.textContent = s.threshold+'¢';
+
+  document.getElementById('notif-overlay').classList.add('open');
+}
+function closeNotifModal() { document.getElementById('notif-overlay').classList.remove('open'); }
+
+function syncToggle(id, on) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  if (on) el.classList.add('on'); else el.classList.remove('on');
+}
+
+function renderPermBanner() {
+  var banner = document.getElementById('notif-perm-banner');
+  if (!banner) return;
+  var perm = Notification.permission;
+  if (perm === 'granted') {
+    banner.innerHTML = '<div class="perm-granted">✅ Browser notifications are enabled for this site.</div>';
+  } else if (perm === 'denied') {
+    banner.innerHTML = '<div class="perm-denied">🚫 Notifications are blocked. Click the 🔒 lock icon in your browser address bar → Site settings → Notifications → Allow.</div>';
+  } else {
+    banner.innerHTML = '<div class="perm-default" onclick="requestNotifPermission()">👆 Click here to enable browser notifications for this site</div>';
+  }
+}
+
+async function requestNotifPermission() {
+  if (!('Notification' in window)) {
+    alert('Your browser does not support notifications.');
+    return;
+  }
+  var result = await Notification.requestPermission();
+  renderPermBanner();
+  if (result === 'granted') {
+    // Fire a welcome notification immediately
+    setTimeout(function(){
+      new Notification('⚡ Energy alerts enabled!', {
+        body: 'You\'ll be notified when prices spike, trend up, or go negative.',
+        tag: 'energy-welcome'
+      });
+    }, 500);
+  }
+}
+
+function toggleNotifMaster() {
+  var el = document.getElementById('notif-master-toggle');
+  if (!el) return;
+  var on = !el.classList.contains('on');
+  // If turning on and permission not yet granted, request it first
+  if (on && Notification.permission === 'default') {
+    requestNotifPermission();
+  }
+  syncToggle('notif-master-toggle', on);
+}
+function toggleNotifTrend() {
+  var el = document.getElementById('notif-trend-toggle');
+  if (el) syncToggle('notif-trend-toggle', !el.classList.contains('on'));
+}
+function toggleNotifCap() {
+  var el = document.getElementById('notif-cap-toggle');
+  if (el) syncToggle('notif-cap-toggle', !el.classList.contains('on'));
+}
+function toggleNotifNeg() {
+  var el = document.getElementById('notif-neg-toggle');
+  if (el) syncToggle('notif-neg-toggle', !el.classList.contains('on'));
+}
+
+function saveNotifSettings() {
+  var s = {
+    enabled:    document.getElementById('notif-master-toggle').classList.contains('on'),
+    threshold:  parseInt(document.getElementById('notif-threshold').value) || 20,
+    trendAlert: document.getElementById('notif-trend-toggle').classList.contains('on'),
+    capAlert:   document.getElementById('notif-cap-toggle').classList.contains('on'),
+    negAlert:   document.getElementById('notif-neg-toggle').classList.contains('on'),
+  };
+  setNotifSettings(s);
+
+  // Update bell appearance
+  var btn = document.getElementById('notif-btn');
+  if (btn) {
+    if (s.enabled && Notification.permission === 'granted') {
+      btn.classList.add('active');
+      btn.title = 'Price alerts ON — click to configure';
+    } else {
+      btn.classList.remove('active');
+      btn.title = 'Price alert settings';
+    }
+  }
+  closeNotifModal();
+}
+
+function sendTestNotif() {
+  if (Notification.permission !== 'granted') {
+    requestNotifPermission();
+    return;
+  }
+  new Notification('⚡ Test alert — Energy Dashboard', {
+    body: 'Price alerts are working! Current: '+(_price !== null ? _price.toFixed(1)+'¢/kWh' : 'loading…'),
+    tag: 'energy-test'
+  });
+}
+
+// Sync bell state on page load
+function syncNotifBell() {
+  var s   = getNotifSettings();
+  var btn = document.getElementById('notif-btn');
+  if (!btn) return;
+  if (s.enabled && Notification.permission === 'granted') {
+    btn.classList.add('active');
+    btn.title = 'Price alerts ON — click to configure';
+  } else {
+    btn.classList.remove('active');
+    btn.title = 'Price alert settings';
   }
 }
 
@@ -1760,6 +2116,7 @@ var _initLoc = getLocation();
 applyMarket(_initLoc.zip);
 renderLocLabel();
 renderFooter();
+syncNotifBell();
 
 // Sync panel amps selector from saved preference
 (function(){
