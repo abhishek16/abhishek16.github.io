@@ -354,6 +354,157 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .lc-dot{r:3;stroke-width:1.5}
 .lc-dot-curr{r:5;stroke-width:2}
 .chart-tooltip-dot{cursor:pointer}
+
+/* ═══════════════════════════════════
+   MOBILE RESPONSIVE  (≤ 640px)
+   All rules are additive — desktop
+   styles remain completely intact.
+═══════════════════════════════════ */
+@media (max-width:640px) {
+
+  /* ── Global spacing ── */
+  .wrap{padding:1rem .75rem 5rem}
+
+  /* ── Header ── */
+  .hdr{flex-direction:column;gap:8px;margin-bottom:1rem}
+  .hdr-l h1{font-size:18px}
+  .hdr-r{width:100%;justify-content:space-between}
+  .loc-pill{font-size:12px;padding:5px 11px;flex:1}
+  .rtime{font-size:10px;white-space:nowrap;align-self:center}
+
+  /* ── Stats row: 2 cols on mobile ── */
+  .stats{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+  .stat{padding:11px 12px}
+  .stat .val{font-size:24px}
+  .stat .lbl{font-size:10px}
+  .stat .sub{font-size:10px}
+
+  /* ── Price breakdown: single col ── */
+  .price-grid{grid-template-columns:1fr;gap:8px}
+  .price-card{padding:12px 14px}
+  .price-row-item.total-row .prv{font-size:15px}
+
+  /* ── Alert banner ── */
+  .alert{font-size:12px;padding:10px 12px;gap:8px}
+
+  /* ── Chart ── */
+  .chart-card{padding:14px 12px}
+  .chart-hdr{gap:6px}
+  .chart-title{font-size:11px}
+  .ctab{padding:4px 8px;font-size:10px}
+  /* Reduce y-axis width on mobile */
+  .y-axis{width:28px}
+  .y-tick{font-size:8px}
+  /* Shorter chart on small screens */
+  #svg-container{height:140px!important}
+  .chart-legend{gap:8px;margin-top:8px}
+  .chart-legend span{font-size:10px}
+  .x-labels{font-size:8px}
+  .price-note{font-size:9px}
+
+  /* ── kWh tip ── */
+  .kwh-tip{padding:10px 12px;font-size:12px;gap:10px}
+  .kwh-tip-icon{font-size:18px}
+
+  /* ── Run Now section header ── */
+  .sec-hdr{flex-wrap:wrap;gap:6px}
+  .sec-title{font-size:11px}
+  .sec-btn{font-size:11px;padding:4px 10px}
+
+  /* ── Appliance cards: single col ── */
+  .apps-grid{grid-template-columns:1fr;gap:6px}
+  .app-card{padding:10px 12px}
+  .app-name{font-size:12px}
+  .app-badge{font-size:10px;padding:2px 7px}
+  .app-detail{font-size:10px}
+  .app-cost{font-size:10px}
+  /* show remove button always on mobile (no hover) */
+  .app-remove{opacity:.5}
+
+  /* ── Panel / Load Balancer ── */
+  .panel-card{padding:12px}
+  .panel-card-hdr{gap:8px}
+  .panel-card-hdr .sec-title{font-size:11px}
+  /* Stack panel-amps and add-device button */
+  .panel-card-hdr > div:last-child{flex-wrap:wrap;gap:6px;width:100%}
+
+  /* Panel body: device list + gauge side by side, gauge narrower */
+  .panel-body{grid-template-columns:1fr 48px;gap:10px}
+
+  /* Device rows: tighter on mobile */
+  .pd-row{padding:8px 8px;gap:6px}
+  .pd-icon{font-size:15px;width:18px}
+  .pd-name{font-size:12px}
+  .pd-watts-input{width:64px;font-size:11px;padding:3px 5px}
+  .pd-unit{font-size:9px}
+  .pd-kw{min-width:36px;font-size:10px}
+  /* Hide cost column on mobile (too cramped) */
+  .pd-cost{display:none}
+  /* Always show delete on mobile */
+  .pd-del{opacity:.4;font-size:14px}
+  .pd-section-lbl{font-size:9px;padding:6px 8px 2px}
+
+  /* Gauge narrower */
+  .panel-gauge-wrap{width:48px;top:12px}
+  .pgauge-bar-wrap{width:36px}
+  .pgauge-pct{font-size:12px}
+
+  /* ── Footer ── */
+  .footer{gap:6px}
+  .footer a{font-size:11px;padding:5px 10px}
+  .footer .note{font-size:10px}
+
+  /* ── Modals: full-width bottom sheet on mobile ── */
+  .overlay{padding:.5rem .5rem 0;align-items:flex-end}
+  .modal{
+    border-radius:var(--radius-xl) var(--radius-xl) 0 0;
+    padding:20px 18px 28px;
+    max-height:88vh;
+    animation:sheetUp .28s cubic-bezier(.34,1.05,.64,1);
+  }
+  @keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+  .modal h2{font-size:16px}
+  .modal .msub{font-size:12px;margin-bottom:14px}
+  .minput{font-size:14px;padding:9px 12px}
+  .mactions{margin-top:16px}
+  .btn{padding:10px 16px;font-size:12px}
+
+  /* ── Wizard: full-width bottom sheet ── */
+  .wizard-overlay{padding:.5rem .5rem 0;align-items:flex-end}
+  .wizard{
+    border-radius:var(--radius-xl) var(--radius-xl) 0 0;
+    max-width:100%;
+    animation:sheetUp .28s cubic-bezier(.34,1.05,.64,1);
+    max-height:90vh;
+    overflow-y:auto;
+  }
+  .wiz-step{padding:20px 18px 24px}
+  .wiz-h{font-size:18px}
+  .wiz-sub{font-size:12px}
+  .wiz-app-grid{grid-template-columns:1fr 1fr;gap:6px;max-height:240px}
+  .wiz-ai{padding:8px 10px;gap:6px}
+  .wiz-ai .wiz-icon{font-size:18px}
+  .wiz-ai .wiz-aname{font-size:11px}
+  .wiz-actions{margin-top:16px}
+
+  /* ── Market banner ── */
+  #market-banner > div{font-size:11px;padding:8px 12px;flex-wrap:wrap}
+
+  /* ── Notification modal specifics ── */
+  #notif-overlay .modal{padding:18px 16px 28px}
+  #notif-overlay input[type=range]{accent-color:var(--red)}
+
+  /* ── Bottom safe area for iOS home indicator ── */
+  .wrap{padding-bottom:calc(4rem + env(safe-area-inset-bottom))}
+}
+
+/* Slightly wider tablets (641–768px) — minor tweaks */
+@media (min-width:641px) and (max-width:768px) {
+  .wrap{padding:1.25rem 1rem 4rem}
+  .apps-grid{grid-template-columns:1fr 1fr}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .panel-body{grid-template-columns:1fr 54px;gap:16px}
+}
 </style>
 </head>
 <body>
@@ -469,7 +620,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div style="font-size:9px;color:var(--text3);text-align:center;line-height:1;margin-bottom:2px" id="pgauge-kw">0 kW</div>
 
         <!-- Bar — overflow:hidden keeps everything inside -->
-        <div class="pgauge-bar-wrap" id="pgauge" style="height:300px;width:44px">
+        <div class="pgauge-bar-wrap" id="pgauge" style="height:300px;width:44px" data-height-desktop="300" data-height-mobile="200">
           <!-- Gradient fill rising from bottom -->
           <div class="pgauge-fill" id="pgauge-fill" style="height:0%"></div>
           <!-- White tick at 80% safe line (inside bar, no overflow) -->
@@ -945,8 +1096,8 @@ function renderMarketBanner() {
   var m = _market;
   if (!m) {
     el.innerHTML='<div style="padding:10px 14px;background:var(--amber-bg);border:1px solid var(--amber);border-radius:var(--radius-lg);font-size:12px;color:var(--amber);margin-bottom:14px">'+
-      '⚠ <strong>Your ZIP code is not in our supported market database.</strong> Defaulting to ComEd CHP pricing. '+
-      '<a href="#" onclick="openLocModal();return false" style="color:var(--amber)">Update your location ↗</a></div>';
+      '⚠ <strong>Your ZIP code is not in our supported market database.<\/strong> Defaulting to ComEd CHP pricing. '+
+      '<a href="#" onclick="openLocModal();return false" style="color:var(--amber)">Update your location ↗<\/a><\/div>';
     return;
   }
   var isLive = m.apiType==='live_json';
@@ -957,14 +1108,14 @@ function renderMarketBanner() {
   var tag    = isLive?'Live real-time API':isTOU?'TOU pricing (not real-time)':'No live API — historical estimates';
   var mName  = m.market+' · '+m.node;
   el.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 14px;background:'+bg+';border:1px solid '+col+'44;border-radius:var(--radius-lg);font-size:12px;color:var(--text2);margin-bottom:14px">'+
-    '<span style="font-size:16px">'+icon+'</span>'+
-    '<div><strong style="color:'+col+'">'+m.utility+'</strong> · '+m.state+' · '+m.territory+'</div>'+
+    '<span style="font-size:16px">'+icon+'<\/span>'+
+    '<div><strong style="color:'+col+'">'+m.utility+'<\/strong> · '+m.state+' · '+m.territory+'<\/div>'+
     '<div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">'+
-      '<span style="background:'+col+'22;color:'+col+';padding:2px 8px;border-radius:4px;font-weight:700;font-size:11px">'+m.market+'</span>'+
-      '<span style="color:var(--text3)">'+mName+'</span>'+
-      '<span style="color:var(--text3)">'+tag+'</span>'+
-    '</div>'+
-  '</div>';
+      '<span style="background:'+col+'22;color:'+col+';padding:2px 8px;border-radius:4px;font-weight:700;font-size:11px">'+m.market+'<\/span>'+
+      '<span style="color:var(--text3)">'+mName+'<\/span>'+
+      '<span style="color:var(--text3)">'+tag+'<\/span>'+
+    '<\/div>'+
+  '<\/div>';
 }
 
 // ══════════════════════════════════
@@ -1029,10 +1180,10 @@ function renderFavChips() {
   favs.forEach(function(f,i){
     var active=f.city===cur.city&&f.zip===cur.zip?' active-fav':'';
     html+='<div class="fav-chip'+active+'" onclick="loadFav(\''+f.city.replace(/'/g,"\\'")+'\',' +'\''+f.zip+'\')">⭐ '+f.city+(f.zip?' '+f.zip:'')+
-      '<span class="del-x" onclick="event.stopPropagation();deleteFav('+i+')" title="Remove">×</span></div>';
+      '<span class="del-x" onclick="event.stopPropagation();deleteFav('+i+')" title="Remove">×<\/span><\/div>';
   });
   var el=document.getElementById('fav-chips');
-  if (el) el.innerHTML=html||'<div style="font-size:12px;color:var(--text3)">None saved yet</div>';
+  if (el) el.innerHTML=html||'<div style="font-size:12px;color:var(--text3)">None saved yet<\/div>';
 }
 
 // ══════════════════════════════════
@@ -1057,23 +1208,23 @@ function renderStats(price, hourly) {
   var html='';
   var mktLabel=m.market+' real-time · ¢/kWh';
   // Supply price
-  html+='<div class="stat fade-up"><div class="lbl">Supply Price</div>'+
-    '<div class="val" style="color:'+r.color+'">'+(price!==null?price.toFixed(1)+'¢':'—')+'</div>'+
-    '<div class="sub">'+mktLabel+'</div></div>';
+  html+='<div class="stat fade-up"><div class="lbl">Supply Price<\/div>'+
+    '<div class="val" style="color:'+r.color+'">'+(price!==null?price.toFixed(1)+'¢':'—')+'<\/div>'+
+    '<div class="sub">'+mktLabel+'<\/div><\/div>';
   // All-in price
   html+='<div class="stat fade-up" style="border-left:3px solid '+(allin!==null?r.color:'var(--gray)')+'">'+
-    '<div class="lbl">All-In Price</div>'+
-    '<div class="val" style="color:'+(allin!==null?r.color:'var(--gray)')+';font-size:26px">'+(allin!==null?allin.toFixed(1)+'¢':'—')+'</div>'+
-    '<div class="sub">incl. delivery + taxes</div></div>';
+    '<div class="lbl">All-In Price<\/div>'+
+    '<div class="val" style="color:'+(allin!==null?r.color:'var(--gray)')+';font-size:26px">'+(allin!==null?allin.toFixed(1)+'¢':'—')+'<\/div>'+
+    '<div class="sub">incl. delivery + taxes<\/div><\/div>';
   // Risk
   html+='<div class="stat risk-stat fade-up" style="--rc:'+r.color+';background:'+r.bg+'">'+
-    '<div class="lbl">Risk Level</div>'+
-    '<div class="val" style="color:'+r.color+';font-size:15px;padding-top:6px">'+r.label+'</div>'+
-    '<div class="sub">'+getPOD(ch)+' · hour '+ch+':00</div></div>';
+    '<div class="lbl">Risk Level<\/div>'+
+    '<div class="val" style="color:'+r.color+';font-size:15px;padding-top:6px">'+r.label+'<\/div>'+
+    '<div class="sub">'+getPOD(ch)+' · hour '+ch+':00<\/div><\/div>';
   // Next cheap
-  html+='<div class="stat fade-up"><div class="lbl">Next Cheap Window</div>'+
-    '<div class="val" style="color:var(--green);font-size:18px;padding-top:4px">'+(cheap?hLabel(cheap.h):'12 AM')+'</div>'+
-    '<div class="sub">'+(cheap?cheap.p.toFixed(1)+'¢ supply · ~'+(cheap.p+getDeliveryAdder()).toFixed(1)+'¢ all-in':'overnight off-peak')+'</div></div>';
+  html+='<div class="stat fade-up"><div class="lbl">Next Cheap Window<\/div>'+
+    '<div class="val" style="color:var(--green);font-size:18px;padding-top:4px">'+(cheap?hLabel(cheap.h):'12 AM')+'<\/div>'+
+    '<div class="sub">'+(cheap?cheap.p.toFixed(1)+'¢ supply · ~'+(cheap.p+getDeliveryAdder()).toFixed(1)+'¢ all-in':'overnight off-peak')+'<\/div><\/div>';
   document.getElementById('stats-row').innerHTML=html;
 
   // Refresh time
@@ -1094,15 +1245,15 @@ function renderStats(price, hourly) {
   var isCapRisk=m.capRisk&&_isSummer&&isWeekday&&(ch2>=m.capHoursStart&&ch2<m.capHoursEnd)&&(capMonths.indexOf(new Date().getMonth())!==-1);
   if (r.l==='spike') {
     ab.style.background=r.bg; ab.style.color=r.color;
-    ab.innerHTML='⚠️ <strong>'+m.market+' price spike!</strong> Pause EV charger, dryer, water heater & AC now. Supply: '+price.toFixed(1)+'¢ · All-in: ~'+(allin||0).toFixed(1)+'¢/kWh';
+    ab.innerHTML='⚠️ <strong>'+m.market+' price spike!<\/strong> Pause EV charger, dryer, water heater & AC now. Supply: '+price.toFixed(1)+'¢ · All-in: ~'+(allin||0).toFixed(1)+'¢/kWh';
     ab.classList.add('on');
   } else if (r.l==='negative') {
     ab.style.background=r.bg; ab.style.color=r.color;
-    ab.innerHTML='🎉 <strong>Negative '+m.market+' price — you\'re being paid to use electricity!</strong> Supply: '+price.toFixed(1)+'¢/kWh. Run everything you can right now.';
+    ab.innerHTML='🎉 <strong>Negative '+m.market+' price — you\'re being paid to use electricity!<\/strong> Supply: '+price.toFixed(1)+'¢/kWh. Run everything you can right now.';
     ab.classList.add('on');
   } else if (isCapRisk) {
     ab.style.background='var(--spike-bg)'; ab.style.color='var(--spike)';
-    ab.innerHTML='🔴 <strong>'+m.market+' Capacity Risk Window ('+hLabel(m.capHoursStart)+'–'+hLabel(m.capHoursEnd)+', summer weekday).</strong> Your annual capacity charge is set by your 5 highest peak-hour draws. Minimize ALL large loads right now — especially HVAC, EV charger, dryer, and water heater. Every kW avoided now could lower your bill for the entire year.';
+    ab.innerHTML='🔴 <strong>'+m.market+' Capacity Risk Window ('+hLabel(m.capHoursStart)+'–'+hLabel(m.capHoursEnd)+', summer weekday).<\/strong> Your annual capacity charge is set by your 5 highest peak-hour draws. Minimize ALL large loads right now — especially HVAC, EV charger, dryer, and water heater. Every kW avoided now could lower your bill for the entire year.';
     ab.classList.add('on');
   } else {
     ab.classList.remove('on');
@@ -1127,37 +1278,37 @@ function renderPriceBreakdown(supplyPrice) {
   var capMonths=m.capMonths||[];
   var isCapRisk=m.capRisk&&_isSummer&&isWeekday&&(ch2>=m.capHoursStart&&ch2<m.capHoursEnd)&&(capMonths.indexOf(new Date().getMonth())!==-1);
   var capRiskRow=isCapRisk
-    ?'<div class="price-row-item" style="background:var(--spike-bg);border-radius:6px;padding:6px 8px;margin:4px 0;border:none"><span class="prl" style="color:var(--spike);font-weight:700">⚠ '+m.market+' Capacity Risk NOW</span><span class="prv" style="color:var(--spike)">Shed load!</span></div>'
+    ?'<div class="price-row-item" style="background:var(--spike-bg);border-radius:6px;padding:6px 8px;margin:4px 0;border:none"><span class="prl" style="color:var(--spike);font-weight:700">⚠ '+m.market+' Capacity Risk NOW<\/span><span class="prv" style="color:var(--spike)">Shed load!<\/span><\/div>'
     :'';
   var sumLabel=m.sumStart?'Jun '+m.sumStart[1]+'–'+(m.sumEnd[0]===9?'Sep':m.sumEnd[0]===10?'Oct':'?')+' '+m.sumEnd[1]:'N/A';
 
   // Card 1: supply
   var c1='<div class="price-card">'+
-    '<div class="pc-title">⚡ Supply Price <span class="badge" style="background:var(--blue-bg);color:var(--blue)">'+m.market+' · '+m.node.split('(')[0].trim()+'</span></div>'+
-    '<div class="price-row-item"><span class="prl">'+m.utility+' hourly supply</span><span class="prv">'+supplyPrice.toFixed(1)+'¢/kWh</span></div>'+
-    '<div class="price-row-item total-row"><span class="prl">Supply price</span><span class="prv" style="color:var(--blue)">'+supplyPrice.toFixed(1)+'¢</span></div>'+
-    '<div class="season-note">'+m.note+'</div>'+
-  '</div>';
+    '<div class="pc-title">⚡ Supply Price <span class="badge" style="background:var(--blue-bg);color:var(--blue)">'+m.market+' · '+m.node.split('(')[0].trim()+'<\/span><\/div>'+
+    '<div class="price-row-item"><span class="prl">'+m.utility+' hourly supply<\/span><span class="prv">'+supplyPrice.toFixed(1)+'¢/kWh<\/span><\/div>'+
+    '<div class="price-row-item total-row"><span class="prl">Supply price<\/span><span class="prv" style="color:var(--blue)">'+supplyPrice.toFixed(1)+'¢<\/span><\/div>'+
+    '<div class="season-note">'+m.note+'<\/div>'+
+  '<\/div>';
 
   // Card 2: all-in
   var c2='<div class="price-card">'+
-    '<div class="pc-title">💳 All-In Rate <span class="badge" style="background:'+r.bg+';color:'+r.color+'">~'+allin.toFixed(1)+'¢/kWh</span></div>'+
+    '<div class="pc-title">💳 All-In Rate <span class="badge" style="background:'+r.bg+';color:'+r.color+'">~'+allin.toFixed(1)+'¢/kWh<\/span><\/div>'+
     capRiskRow+
-    '<div class="price-row-item"><span class="prl">Supply ('+m.market+')</span><span class="prv">'+supplyPrice.toFixed(1)+'¢</span></div>'+
-    (txCharge>0?'<div class="price-row-item"><span class="prl">Transmission</span><span class="prv">'+txCharge.toFixed(2)+'¢</span></div>':'')+
-    '<div class="price-row-item"><span class="prl">Delivery / distribution</span><span class="prv">'+delivCharge.toFixed(2)+'¢ '+(_isSummer?'(summer)':'(non-summer)')+'</span></div>'+
-    '<div class="price-row-item"><span class="prl">Taxes &amp; environmental</span><span class="prv">~'+taxEst.toFixed(2)+'¢</span></div>'+
-    '<div class="price-row-item total-row"><span class="prl">Total all-in</span><span class="prv" style="color:'+r.color+'">~'+allin.toFixed(1)+'¢/kWh</span></div>'+
+    '<div class="price-row-item"><span class="prl">Supply ('+m.market+')<\/span><span class="prv">'+supplyPrice.toFixed(1)+'¢<\/span><\/div>'+
+    (txCharge>0?'<div class="price-row-item"><span class="prl">Transmission<\/span><span class="prv">'+txCharge.toFixed(2)+'¢<\/span><\/div>':'')+
+    '<div class="price-row-item"><span class="prl">Delivery / distribution<\/span><span class="prv">'+delivCharge.toFixed(2)+'¢ '+(_isSummer?'(summer)':'(non-summer)')+'<\/span><\/div>'+
+    '<div class="price-row-item"><span class="prl">Taxes &amp; environmental<\/span><span class="prv">~'+taxEst.toFixed(2)+'¢<\/span><\/div>'+
+    '<div class="price-row-item total-row"><span class="prl">Total all-in<\/span><span class="prv" style="color:'+r.color+'">~'+allin.toFixed(1)+'¢/kWh<\/span><\/div>'+
     '<div class="season-note">'+
       (_isSummer
-        ?'☀️ <strong>Summer rate active ('+sumLabel+'):</strong> Higher delivery fee. '+
+        ?'☀️ <strong>Summer rate active ('+sumLabel+'):<\/strong> Higher delivery fee. '+
           (m.capRisk?m.market+' capacity charge set by peak-hour draws. Prices auto-switch after '+sumLabel.split('–')[1]+'.':''  )
         :(m.sumStart
-          ?'❄️ <strong>Non-summer rate active:</strong> Lower delivery fee. Switches to summer rate '+sumLabel+'.'
+          ?'❄️ <strong>Non-summer rate active:<\/strong> Lower delivery fee. Switches to summer rate '+sumLabel+'.'
           :'ℹ️ No seasonal delivery distinction for '+m.utility+'.')
       )+
-    '</div>'+
-  '</div>';
+    '<\/div>'+
+  '<\/div>';
   grid.innerHTML=c1+c2;
 }
 
@@ -1204,7 +1355,7 @@ function renderChart() {
       });
     }
     noteEl.textContent='Hourly averages computed from ComEd 5-min feed. Each bar = one calendar hour (0–23). Current hour outlined. Hover dots for exact value.';
-    xlabels.innerHTML='<span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>11 PM</span>';
+    xlabels.innerHTML='<span>12 AM<\/span><span>6 AM<\/span><span>12 PM<\/span><span>6 PM<\/span><span>11 PM<\/span>';
   } else {
     var rev=_fiveMin.slice().reverse();
     rev.forEach(function(d,i){
@@ -1214,18 +1365,19 @@ function renderChart() {
       data.push({x:i,p:p,label:lbl,isRecent:i>=rev.length-12});
     });
     noteEl.textContent='Last 24 hours of 5-minute prices from ComEd API. Hover points for time + value.';
-    xlabels.innerHTML='<span>24h ago</span><span>18h ago</span><span>12h ago</span><span>6h ago</span><span>now</span>';
+    xlabels.innerHTML='<span>24h ago<\/span><span>18h ago<\/span><span>12h ago<\/span><span>6h ago<\/span><span>now<\/span>';
   }
 
   // Check we have at least some valid prices
   var validPrices = data.filter(function(d){return d.p !== null;}).map(function(d){return d.p;});
   if (!validPrices.length) {
-    container.innerHTML='<div style="color:var(--text3);font-size:13px;padding:1rem">Waiting for data…</div>';
+    container.innerHTML='<div style="color:var(--text3);font-size:13px;padding:1rem">Waiting for data…<\/div>';
     yAxisEl.innerHTML='';
     return;
   }
 
-  var W=container.clientWidth||600, H=180;
+  var isMobile = window.innerWidth <= 640;
+  var W=container.clientWidth||600, H=isMobile ? 140 : 180;
   var PAD={top:14,right:12,bottom:8,left:4};
   var chartW=W-PAD.left-PAD.right, chartH=H-PAD.top-PAD.bottom;
   var n=data.length;
@@ -1246,7 +1398,7 @@ function renderChart() {
   var tickCount=5, yHTML='';
   for(var ti=tickCount;ti>=0;ti--){
     var tv=minP+(maxP-minP)*ti/tickCount;
-    yHTML+='<div class="y-tick">'+tv.toFixed(1)+'¢</div>';
+    yHTML+='<div class="y-tick">'+tv.toFixed(1)+'¢<\/div>';
   }
   yAxisEl.innerHTML=yHTML;
 
@@ -1278,7 +1430,7 @@ function renderChart() {
   var gradId='lcg'+Math.floor(Math.random()*99999);
   var midP=validPrices[Math.floor(validPrices.length/2)];
   var gradCol=lineColor(midP);
-  svg+='<defs><linearGradient id="'+gradId+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+gradCol+'" stop-opacity="0.15"/><stop offset="100%" stop-color="'+gradCol+'" stop-opacity="0.01"/></linearGradient></defs>';
+  svg+='<defs><linearGradient id="'+gradId+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+gradCol+'" stop-opacity="0.15"/><stop offset="100%" stop-color="'+gradCol+'" stop-opacity="0.01"/><\/linearGradient><\/defs>';
 
   // Build area path — skip gaps
   var areaPath='';
@@ -1326,7 +1478,7 @@ function renderChart() {
     var tip=d.label+': '+d.p.toFixed(1)+'¢'+(d.partial?' (in progress)':'');
     svg+='<circle cx="'+px(d,di).toFixed(1)+'" cy="'+py(d.p).toFixed(1)+'" r="'+r2+
          '" fill="'+col2+'" stroke="var(--surface)" stroke-width="'+sw+'" opacity="'+op2+
-         '" class="chart-tooltip-dot"><title>'+tip+'</title></circle>';
+         '" class="chart-tooltip-dot"><title>'+tip+'<\/title><\/circle>';
   }
   // Always show last valid dot prominently
   for(var lvi=n-1;lvi>=0;lvi--){
@@ -1334,12 +1486,12 @@ function renderChart() {
       var lc=lineColor(data[lvi].p);
       svg+='<circle cx="'+px(data[lvi],lvi).toFixed(1)+'" cy="'+py(data[lvi].p).toFixed(1)+
            '" r="5" fill="'+lc+'" stroke="var(--surface)" stroke-width="2">'+
-           '<title>'+data[lvi].label+': '+data[lvi].p.toFixed(1)+'¢'+(data[lvi].partial?' (in progress)':'')+'</title></circle>';
+           '<title>'+data[lvi].label+': '+data[lvi].p.toFixed(1)+'¢'+(data[lvi].partial?' (in progress)':'')+'<\/title><\/circle>';
       break;
     }
   }
 
-  svg+='</svg>';
+  svg+='<\/svg>';
   container.innerHTML=svg;
 }
 
@@ -1360,17 +1512,17 @@ function renderAppliances(price) {
       ?(isEarning?'⬇ Earning ':'')+'$'+costPerHr.toFixed(4)+'/hr supply · $'+(allinCost||0).toFixed(4)+'/hr all-in'
       :app.kw+' kW';
     html+='<div class="app-card" style="border-color:'+d.color+'3a;border-left-color:'+d.color+';background:'+d.bg+'">'+
-      '<button class="app-remove" onclick="removeApp(\''+app.id+'\')" title="Remove">×</button>'+
+      '<button class="app-remove" onclick="removeApp(\''+app.id+'\')" title="Remove">×<\/button>'+
       '<div class="app-top">'+
-        '<div class="app-name">'+app.icon+' '+app.name+'</div>'+
-        '<span class="app-badge" style="color:'+d.color+';background:'+d.color+'22">'+d.go+'</span>'+
-      '</div>'+
-      '<div class="app-detail">Best: '+app.best+'</div>'+
-      '<div class="app-detail" style="color:var(--text3)">'+app.note+'</div>'+
-      '<div class="app-cost" style="color:'+d.color+'">'+costStr+'</div>'+
-    '</div>';
+        '<div class="app-name">'+app.icon+' '+app.name+'<\/div>'+
+        '<span class="app-badge" style="color:'+d.color+';background:'+d.color+'22">'+d.go+'<\/span>'+
+      '<\/div>'+
+      '<div class="app-detail">Best: '+app.best+'<\/div>'+
+      '<div class="app-detail" style="color:var(--text3)">'+app.note+'<\/div>'+
+      '<div class="app-cost" style="color:'+d.color+'">'+costStr+'<\/div>'+
+    '<\/div>';
   });
-  if (!apps.length) html='<div style="color:var(--text3);font-size:13px;padding:.5rem">No appliances added. Click "+ Add Appliance" to get started.</div>';
+  if (!apps.length) html='<div style="color:var(--text3);font-size:13px;padding:.5rem">No appliances added. Click "+ Add Appliance" to get started.<\/div>';
   grid.innerHTML=html;
 }
 
@@ -1386,9 +1538,9 @@ function openAddApp() {
   var active=getUserApps(), html='';
   APP_LIBRARY.forEach(function(a){
     if (active.indexOf(a.id)===-1)
-      html+='<div class="fav-chip" onclick="quickAddApp(\''+a.id+'\')">'+a.icon+' '+a.name+' ('+a.kw+'kW)</div>';
+      html+='<div class="fav-chip" onclick="quickAddApp(\''+a.id+'\')">'+a.icon+' '+a.name+' ('+a.kw+'kW)<\/div>';
   });
-  document.getElementById('quick-add-chips').innerHTML=html||'<div style="font-size:12px;color:var(--text3)">All library appliances already added.</div>';
+  document.getElementById('quick-add-chips').innerHTML=html||'<div style="font-size:12px;color:var(--text3)">All library appliances already added.<\/div>';
   ['new-icon','new-name','new-kw','new-best','new-note'].forEach(function(id){document.getElementById(id).value='';});
   _newShift=true;
   document.getElementById('shift-yes').classList.add('on');
@@ -1463,6 +1615,10 @@ function buildPanelHTML() {
   var maxKw   = panelMaxKw(amps);
   var safeKw  = panelSafeKw(amps);
 
+  // Sync gauge height for mobile
+  var gauge = document.getElementById('pgauge');
+  if (gauge) gauge.style.height = (window.innerWidth <= 640 ? 200 : 300) + 'px';
+
   // Sync select
   var sel = document.getElementById('panel-amps');
   if (sel) sel.value = String(amps);
@@ -1492,27 +1648,27 @@ function buildPanelHTML() {
       ? (d.on ? (_price < 0 ? 'var(--blue)' : _price < 8 ? 'var(--green)' : _price < 14 ? 'var(--amber)' : 'var(--red)') : 'var(--text3)')
       : 'var(--text3)';
     return '<div class="pd-row'+(d.on?' pd-on':'')+'">'+
-      '<button class="pd-toggle'+(d.on?' on':'')+'" onclick="togglePanelDevice('+realIdx+')" title="'+(d.on?'Turn off':'Turn on')+'"></button>'+
-      '<span class="pd-icon">'+d.icon+'</span>'+
-      '<span class="pd-name">'+d.name+'</span>'+
+      '<button class="pd-toggle'+(d.on?' on':'')+'" onclick="togglePanelDevice('+realIdx+')" title="'+(d.on?'Turn off':'Turn on')+'"><\/button>'+
+      '<span class="pd-icon">'+d.icon+'<\/span>'+
+      '<span class="pd-name">'+d.name+'<\/span>'+
       '<div class="pd-watts-wrap">'+
         '<input class="pd-watts-input" type="number" min="1" max="100000" value="'+d.watts+'" '+
           'onchange="updatePanelDeviceWatts('+realIdx+',this.value)" '+
           'onclick="this.select()" title="Click to edit watts"/>'+
-        '<span class="pd-unit">W</span>'+
-      '</div>'+
-      '<span class="pd-kw">'+kwStr+'</span>'+
-      '<span class="pd-cost" style="color:'+costCol+'">'+costStr+'</span>'+
-      '<button class="pd-del" onclick="removePanelDevice('+realIdx+')" title="Remove">×</button>'+
-    '</div>';
+        '<span class="pd-unit">W<\/span>'+
+      '<\/div>'+
+      '<span class="pd-kw">'+kwStr+'<\/span>'+
+      '<span class="pd-cost" style="color:'+costCol+'">'+costStr+'<\/span>'+
+      '<button class="pd-del" onclick="removePanelDevice('+realIdx+')" title="Remove">×<\/button>'+
+    '<\/div>';
   }
 
   if (onDevices.length) {
-    html += '<div class="pd-section-lbl"><span class="pd-dot" style="background:var(--green-mid)"></span>Running ('+onDevices.length+')</div>';
+    html += '<div class="pd-section-lbl"><span class="pd-dot" style="background:var(--green-mid)"><\/span>Running ('+onDevices.length+')<\/div>';
     onDevices.forEach(function(d){ html += deviceRow(d); });
   }
   if (offDevices.length) {
-    html += '<div class="pd-section-lbl" style="margin-top:6px"><span class="pd-dot" style="background:var(--surface3);border:1px solid var(--border2)"></span>Off</div>';
+    html += '<div class="pd-section-lbl" style="margin-top:6px"><span class="pd-dot" style="background:var(--surface3);border:1px solid var(--border2)"><\/span>Off<\/div>';
     offDevices.forEach(function(d){ html += deviceRow(d); });
   }
 
@@ -1608,10 +1764,10 @@ function updatePanel() {
   // Labels inside bar (clipped by overflow:hidden — no bleed)
   var topLbl  = document.getElementById('pgauge-top-lbl');
   var safeLbl = document.getElementById('pgauge-safe-lbl');
-  if (topLbl)  topLbl.innerHTML  = maxKw.toFixed(0)+'<br><span style="font-weight:400;opacity:.75">kW max</span>';
+  if (topLbl)  topLbl.innerHTML  = maxKw.toFixed(0)+'<br><span style="font-weight:400;opacity:.75">kW max<\/span>';
   if (safeLbl) {
     safeLbl.style.bottom = 'calc(80% + 3px)';
-    safeLbl.innerHTML = safeKw.toFixed(0)+'<br><span style="font-weight:400;opacity:.75">safe</span>';
+    safeLbl.innerHTML = safeKw.toFixed(0)+'<br><span style="font-weight:400;opacity:.75">safe<\/span>';
   }
 
   // Readout above bar
@@ -1639,8 +1795,8 @@ function updatePanel() {
     var supCost   = (total * Math.abs(_price) / 100).toFixed(4);
     var allinCost = (total * Math.abs(allin||0) / 100).toFixed(4);
     note.innerHTML = _price < 0
-      ? '💰 At '+_price.toFixed(1)+'¢/kWh, '+onCount+' device'+(onCount!==1?'s':'')+' are <strong>earning $'+supCost+'/hr</strong>!'
-      : onCount+' device'+(onCount!==1?'s':'')+' · <strong>$'+supCost+'/hr</strong> supply · <strong>$'+allinCost+'/hr</strong> all-in at '+_price.toFixed(1)+'¢.';
+      ? '💰 At '+_price.toFixed(1)+'¢/kWh, '+onCount+' device'+(onCount!==1?'s':'')+' are <strong>earning $'+supCost+'/hr<\/strong>!'
+      : onCount+' device'+(onCount!==1?'s':'')+' · <strong>$'+supCost+'/hr<\/strong> supply · <strong>$'+allinCost+'/hr<\/strong> all-in at '+_price.toFixed(1)+'¢.';
   } else if (note) {
     note.textContent = onCount===0 ? 'Toggle devices on to see live running cost.' : '';
   }
@@ -1657,9 +1813,9 @@ function buildWizardApps() {
   APP_LIBRARY.forEach(function(a){
     var sel=active.indexOf(a.id)!==-1;
     html+='<div class="wiz-ai'+(sel?' selected':'')+'" onclick="toggleWizApp(this,\''+a.id+'\')">'+
-      '<div class="wiz-icon">'+a.icon+'</div>'+
-      '<div><div class="wiz-aname">'+a.name+'</div><div class="wiz-akw">'+a.kw+' kW</div></div>'+
-      '<div class="wiz-check">'+(sel?'✓':'')+'</div></div>';
+      '<div class="wiz-icon">'+a.icon+'<\/div>'+
+      '<div><div class="wiz-aname">'+a.name+'<\/div><div class="wiz-akw">'+a.kw+' kW<\/div><\/div>'+
+      '<div class="wiz-check">'+(sel?'✓':'')+'<\/div><\/div>';
   });
   document.getElementById('wiz-app-grid').innerHTML=html;
 }
@@ -1769,13 +1925,13 @@ function processHourly(feed) {
 function showNoApiMessage(m) {
   var isTOU = m && m.apiType==='tou_not_real_time';
   var msg = isTOU
-    ? '⏰ <strong>'+m.utility+' uses Time-of-Use pricing, not live real-time rates.</strong> Peak hours are typically 4–9 PM daily. The all-in adder breakdown below reflects your utility\'s fixed rate components.'
-    : '📊 <strong>No live public API for '+(m?m.utility:'this utility')+'.</strong> Adder estimates below are based on current regulatory filings. Check your utility\'s website for today\'s prices.';
+    ? '⏰ <strong>'+m.utility+' uses Time-of-Use pricing, not live real-time rates.<\/strong> Peak hours are typically 4–9 PM daily. The all-in adder breakdown below reflects your utility\'s fixed rate components.'
+    : '📊 <strong>No live public API for '+(m?m.utility:'this utility')+'.<\/strong> Adder estimates below are based on current regulatory filings. Check your utility\'s website for today\'s prices.';
   var statsEl = document.getElementById('stats-row');
   if (statsEl) statsEl.innerHTML =
     '<div style="background:var(--blue-bg);border:1px solid var(--blue)44;border-radius:var(--radius-lg);padding:12px 16px;font-size:13px;color:var(--text2);grid-column:1/-1">'+
-      msg+'<br><span style="font-size:11px;color:var(--text3);margin-top:4px;display:block">All-in adder still applied correctly for your market below.</span>'+
-    '</div>';
+      msg+'<br><span style="font-size:11px;color:var(--text3);margin-top:4px;display:block">All-in adder still applied correctly for your market below.<\/span>'+
+    '<\/div>';
   renderMarketBanner();
   renderPriceBreakdown(null);
   document.getElementById('price-grid').style.display='none';
@@ -1826,7 +1982,7 @@ async function load() {
   } catch(e) {
     document.getElementById('stats-row').innerHTML =
       '<div style="color:var(--text3);font-size:13px;padding:.5rem 0">Could not reach '+m.utility+' API. '+
-      '<a href="'+(m.program_url||'#')+'" target="_blank" style="color:var(--blue)">View on utility site ↗</a></div>';
+      '<a href="'+(m.program_url||'#')+'" target="_blank" style="color:var(--blue)">View on utility site ↗<\/a><\/div>';
   }
 }
 
@@ -1987,11 +2143,11 @@ function renderPermBanner() {
   if (!banner) return;
   var perm = Notification.permission;
   if (perm === 'granted') {
-    banner.innerHTML = '<div class="perm-granted">✅ Browser notifications are enabled for this site.</div>';
+    banner.innerHTML = '<div class="perm-granted">✅ Browser notifications are enabled for this site.<\/div>';
   } else if (perm === 'denied') {
-    banner.innerHTML = '<div class="perm-denied">🚫 Notifications are blocked. Click the 🔒 lock icon in your browser address bar → Site settings → Notifications → Allow.</div>';
+    banner.innerHTML = '<div class="perm-denied">🚫 Notifications are blocked. Click the 🔒 lock icon in your browser address bar → Site settings → Notifications → Allow.<\/div>';
   } else {
-    banner.innerHTML = '<div class="perm-default" onclick="requestNotifPermission()">👆 Click here to enable browser notifications for this site</div>';
+    banner.innerHTML = '<div class="perm-default" onclick="requestNotifPermission()">👆 Click here to enable browser notifications for this site<\/div>';
   }
 }
 
@@ -2096,18 +2252,18 @@ function renderFooter() {
   var progUrl = m.program_url || '#';
   var html = '';
   if (isComEd) {
-    html += '<a href="https://hourlypricing.comed.com/live-prices/" target="_blank">Live Prices ↗</a>'+
-            '<a href="https://hourlypricing.comed.com/live-prices/day-ahead-prices/" target="_blank">Tomorrow ↗</a>'+
-            '<a href="https://hourlypricing.comed.com/live-prices/five-minute-prices/" target="_blank">5-Min Detail ↗</a>';
+    html += '<a href="https://hourlypricing.comed.com/live-prices/" target="_blank">Live Prices ↗<\/a>'+
+            '<a href="https://hourlypricing.comed.com/live-prices/day-ahead-prices/" target="_blank">Tomorrow ↗<\/a>'+
+            '<a href="https://hourlypricing.comed.com/live-prices/five-minute-prices/" target="_blank">5-Min Detail ↗<\/a>';
   } else {
-    html += '<a href="'+progUrl+'" target="_blank">'+m.utility+' Pricing ↗</a>';
-    if (m.market==='PJM')   html += '<a href="https://www.pjm.com/markets-and-operations/energy/real-time" target="_blank">PJM Real-Time ↗</a>';
-    if (m.market==='ERCOT') html += '<a href="https://www.ercot.com/content/cdr/html/real_time_spp" target="_blank">ERCOT Prices ↗</a>';
-    if (m.market==='NYISO') html += '<a href="https://www.nyiso.com/real-time-dashboard" target="_blank">NYISO Dashboard ↗</a>';
-    if (m.market==='CAISO') html += '<a href="https://www.caiso.com/TodaysOutlook/Pages/prices.aspx" target="_blank">CAISO Prices ↗</a>';
-    if (m.market==='MISO')  html += '<a href="https://www.misoenergy.org/markets-and-operations/real-time--market-data/market-reports/" target="_blank">MISO Reports ↗</a>';
+    html += '<a href="'+progUrl+'" target="_blank">'+m.utility+' Pricing ↗<\/a>';
+    if (m.market==='PJM')   html += '<a href="https://www.pjm.com/markets-and-operations/energy/real-time" target="_blank">PJM Real-Time ↗<\/a>';
+    if (m.market==='ERCOT') html += '<a href="https://www.ercot.com/content/cdr/html/real_time_spp" target="_blank">ERCOT Prices ↗<\/a>';
+    if (m.market==='NYISO') html += '<a href="https://www.nyiso.com/real-time-dashboard" target="_blank">NYISO Dashboard ↗<\/a>';
+    if (m.market==='CAISO') html += '<a href="https://www.caiso.com/TodaysOutlook/Pages/prices.aspx" target="_blank">CAISO Prices ↗<\/a>';
+    if (m.market==='MISO')  html += '<a href="https://www.misoenergy.org/markets-and-operations/real-time--market-data/market-reports/" target="_blank">MISO Reports ↗<\/a>';
   }
-  html += '<span class="note">'+(isComEd?'Auto-refreshes every 5 min':'Adders from verified 2025–2026 rate filings')+'</span>';
+  html += '<span class="note">'+(isComEd?'Auto-refreshes every 5 min':'Adders from verified 2025–2026 rate filings')+'<\/span>';
   el.innerHTML = html;
 }
 
@@ -2138,7 +2294,11 @@ if (!hasOnboarded()) {
 
 load();
 setInterval(load,300000);
-window.addEventListener('resize',function(){if(_fiveMin.length||_hourly.length)renderChart();});
+window.addEventListener('resize',function(){
+  if(_fiveMin.length||_hourly.length) renderChart();
+  var gauge = document.getElementById('pgauge');
+  if (gauge) gauge.style.height = (window.innerWidth<=640?200:300)+'px';
+});
 </script>
 </body>
 </html>
