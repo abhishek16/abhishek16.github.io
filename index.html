@@ -53,18 +53,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .risk-stat{border-left:3px solid var(--rc)}
 
 /* Price breakdown cards */
-.price-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-@media(max-width:520px){.price-grid{grid-template-columns:1fr}}
-.price-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;box-shadow:var(--shadow)}
-.price-card .pc-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.price-card .pc-title .badge{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:700}
-.price-row-item{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid var(--border);font-size:12px}
-.price-row-item:last-child{border-bottom:none;padding-top:8px;margin-top:2px}
-.price-row-item.total-row{font-weight:700;font-size:14px;border-top:1.5px solid var(--border2);border-bottom:none;margin-top:4px}
-.price-row-item .prl{color:var(--text2)}
-.price-row-item .prv{font-weight:600;color:var(--text)}
-.price-row-item.total-row .prv{font-size:18px;font-weight:800}
-.season-note{font-size:11px;color:var(--text3);margin-top:8px;padding-top:6px;border-top:0.5px solid var(--border)}
+/* Merged price breakdown card */
+.price-grid{margin-bottom:14px}
+.price-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;box-shadow:var(--shadow)}
+.pc-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding-bottom:12px;border-bottom:1.5px solid var(--border)}
+.pc-left{display:flex;flex-direction:column;gap:4px}
+.pc-market-badge{display:flex;align-items:center;gap:6px;margin-bottom:2px}
+.pc-supply-val{font-size:32px;font-weight:800;letter-spacing:-.5px;line-height:1}
+.pc-supply-lbl{font-size:11px;color:var(--text3)}
+.pc-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.pc-allin-val{font-size:26px;font-weight:800;letter-spacing:-.5px;line-height:1}
+.pc-allin-lbl{font-size:11px;color:var(--text3);text-align:right}
+.pc-divider{width:1px;background:var(--border2);align-self:stretch;flex-shrink:0}
+.pc-breakdown{display:grid;grid-template-columns:1fr auto;gap:0}
+.pc-row{display:contents}
+.pc-row-lbl{font-size:12px;color:var(--text2);padding:5px 0;border-bottom:0.5px solid var(--border)}
+.pc-row-val{font-size:12px;font-weight:600;color:var(--text);padding:5px 0;border-bottom:0.5px solid var(--border);text-align:right}
+.pc-row-lbl.total,.pc-row-val.total{border-bottom:none;padding-top:9px;font-size:13px;font-weight:700;border-top:1.5px solid var(--border2)}
+.pc-cap-row{grid-column:1/-1;background:var(--spike-bg);border-radius:6px;padding:7px 10px;margin:4px 0;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;color:var(--spike)}
+.pc-season{grid-column:1/-1;font-size:11px;color:var(--text3);margin-top:10px;padding-top:8px;border-top:0.5px solid var(--border);line-height:1.5}
+.pc-note{font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5}
+@media(max-width:520px){
+  .pc-supply-val{font-size:26px}
+  .pc-allin-val{font-size:21px}
+  .pc-header{gap:8px}
+}
 
 /* Alert */
 .alert{display:none;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--radius-lg);margin-bottom:14px;font-size:13px;font-weight:700;animation:slideIn .3s ease}
@@ -347,7 +360,61 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
 .pulsing{animation:pulse 1.5s infinite}
 
-/* SVG line chart */
+/* Expand button */
+.expand-btn{font-size:12px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.expand-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
+
+/* Inline price labels on chart */
+.chart-price-label{font-size:9px;font-weight:700;pointer-events:none;user-select:none}
+
+/* Touch tooltip */
+.touch-tip{position:absolute;background:var(--text);color:var(--bg);font-size:12px;font-weight:700;padding:5px 9px;border-radius:8px;white-space:nowrap;pointer-events:none;z-index:10;transform:translateX(-50%);box-shadow:0 3px 12px rgba(0,0,0,.18)}
+.touch-tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--text)}
+
+/* Chart fullscreen modal */
+.chart-modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);
+  z-index:500;display:none;align-items:center;justify-content:center;
+  padding:1rem;backdrop-filter:blur(4px);
+}
+.chart-modal-overlay.open{display:flex}
+.chart-modal{
+  background:var(--surface);border-radius:var(--radius-xl);
+  width:100%;max-width:900px;max-height:90vh;
+  overflow-y:auto;box-shadow:var(--shadow-lg);
+  animation:modalIn .25s ease;
+  display:flex;flex-direction:column;
+}
+.chart-modal-hdr{display:flex;justify-content:space-between;align-items:flex-start;padding:18px 20px 0;flex-shrink:0}
+.chart-modal-title{font-size:18px;font-weight:800;color:var(--text)}
+.chart-modal-close{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;width:32px;height:32px;font-size:14px;cursor:pointer;color:var(--text2);font-family:inherit;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.chart-modal-close:hover{background:var(--red-bg);color:var(--red);border-color:var(--red)}
+.chart-modal-tabs{display:flex;gap:4px;padding:12px 20px 0;flex-shrink:0;flex-wrap:wrap}
+.cmtab{padding:6px 14px;font-size:12px;font-weight:700;border-radius:8px;border:1px solid var(--border2);background:none;color:var(--text3);cursor:pointer;transition:all .15s;font-family:inherit}
+.cmtab:hover{border-color:var(--blue);color:var(--blue)}
+.cmtab.active{background:var(--text);color:var(--bg);border-color:transparent}
+.chart-modal-body{padding:16px 20px 0;flex-shrink:0;position:relative}
+.chart-modal-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;padding:12px 20px;flex-shrink:0}
+.cms-card{background:var(--surface2);border-radius:var(--radius);padding:10px 12px}
+.cms-card .cms-lbl{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.cms-card .cms-val{font-size:18px;font-weight:800;color:var(--text)}
+.cms-card .cms-sub{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* Loading spinner for history */
+.hist-loading{display:flex;align-items:center;justify-content:center;height:360px;color:var(--text3);font-size:13px;flex-direction:column;gap:10px}
+.hist-spinner{width:28px;height:28px;border:3px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Mobile chart modal: full screen */
+@media(max-width:640px){
+  .chart-modal-overlay{padding:0;align-items:flex-end}
+  .chart-modal{border-radius:var(--radius-xl) var(--radius-xl) 0 0;max-height:95vh;animation:sheetUp .28s cubic-bezier(.34,1.05,.64,1)}
+  #modal-svg-container{height:240px!important}
+  .chart-modal-stats{grid-template-columns:repeat(2,1fr)}
+  .cmtab{padding:5px 10px;font-size:11px}
+}
+
+@keyframes spin{to{transform:rotate(360deg)}}
 .svg-chart{overflow:visible}
 .lc-area{fill-opacity:.12}
 .lc-line{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -380,9 +447,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   .stat .sub{font-size:10px}
 
   /* ── Price breakdown: single col ── */
-  .price-grid{grid-template-columns:1fr;gap:8px}
-  .price-card{padding:12px 14px}
-  .price-row-item.total-row .prv{font-size:15px}
+  .price-card{padding:13px 14px}
 
   /* ── Alert banner ── */
   .alert{font-size:12px;padding:10px 12px;gap:8px}
@@ -542,12 +607,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="alert" id="alert-bar"></div>
 
   <!-- Chart -->
-  <div class="chart-card fade-up">
+  <div class="chart-card fade-up" id="chart-card">
     <div class="chart-hdr">
       <div class="chart-title">Price History (¢/kWh)</div>
-      <div class="chart-tabs">
-        <button class="ctab active" onclick="switchChart('hourly',this)">Hourly Today</button>
-        <button class="ctab" onclick="switchChart('5min',this)">5-Min (24h)</button>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <div class="chart-tabs">
+          <button class="ctab active" onclick="switchChart('hourly',this)">Hourly</button>
+          <button class="ctab" onclick="switchChart('5min',this)">5-Min</button>
+        </div>
+        <button class="expand-btn" onclick="openChartModal()" title="Expand chart & view history">⤢ Expand</button>
       </div>
     </div>
     <div class="chart-body">
@@ -558,13 +626,69 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
     </div>
     <div class="chart-legend">
-      <span><i style="background:#185FA5"></i>Negative (free!)</span>
-      <span><i style="background:#2a6b0d"></i>&lt;8¢ low</span>
-      <span><i style="background:#7a4400"></i>8–14¢ medium</span>
-      <span><i style="background:#982020"></i>14–25¢ high</span>
-      <span><i style="background:#8a2c0e"></i>&gt;25¢ spike</span>
+      <span><i style="background:#185FA5"></i>Negative</span>
+      <span><i style="background:#2a6b0d"></i>&lt;8¢</span>
+      <span><i style="background:#7a4400"></i>8–14¢</span>
+      <span><i style="background:#982020"></i>14–25¢</span>
+      <span><i style="background:#8a2c0e"></i>&gt;25¢</span>
     </div>
     <div class="price-note" id="price-note"></div>
+  </div>
+
+  <!-- ─── EXPANDED CHART MODAL ─── -->
+  <div class="chart-modal-overlay" id="chart-modal-overlay" onclick="closeChartModalOutside(event)">
+    <div class="chart-modal" id="chart-modal">
+      <div class="chart-modal-hdr">
+        <div>
+          <div class="chart-modal-title">Price History &amp; Analysis</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px" id="chart-modal-sub">ComEd CHP · PJM Northern Illinois</div>
+        </div>
+        <button class="chart-modal-close" onclick="closeChartModal()">✕</button>
+      </div>
+
+      <!-- View tabs -->
+      <div class="chart-modal-tabs" id="chart-modal-tabs">
+        <button class="cmtab active" onclick="switchModalView('today',this)">Today</button>
+        <button class="cmtab" onclick="switchModalView('5min',this)">5-Min (24h)</button>
+        <button class="cmtab" onclick="switchModalView('week',this)">7 Days</button>
+        <button class="cmtab" onclick="switchModalView('month',this)">30 Days</button>
+        <button class="cmtab" onclick="switchModalView('quarter',this)">90 Days</button>
+      </div>
+
+      <!-- Chart area -->
+      <div class="chart-modal-body">
+        <div style="display:flex;gap:8px">
+          <div class="y-axis" id="modal-y-axis" style="width:36px"></div>
+          <div style="flex:1;min-width:0;position:relative">
+            <div id="modal-svg-container" style="width:100%;height:360px"></div>
+            <!-- Crosshair tooltip -->
+            <div id="modal-crosshair-tip" style="display:none;position:absolute;color:#fff;font-size:12px;padding:8px 12px;border-radius:10px;white-space:nowrap;pointer-events:none;z-index:20;box-shadow:0 4px 16px rgba(0,0,0,.25);line-height:1.5;min-width:140px"></div>
+            <!-- Touch tooltip -->
+            <div id="modal-touch-tip" class="touch-tip" style="display:none"></div>
+          </div>
+        </div>
+        <div class="x-labels" id="modal-x-labels" style="padding-left:44px"></div>
+      </div>
+
+      <!-- Loading state -->
+      <div id="chart-modal-loading" style="display:none;flex-direction:column;align-items:center;padding:2rem;gap:10px">
+        <div style="width:28px;height:28px;border:3px solid var(--surface3);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite"></div>
+        <span style="font-size:13px;color:var(--text3)">Loading…</span>
+      </div>
+
+      <!-- Stats row -->
+      <div class="chart-modal-stats" id="chart-modal-stats"></div>
+
+      <!-- Legend -->
+      <div class="chart-legend" style="margin-top:8px">
+        <span><i style="background:#185FA5"></i>Negative (free!)</span>
+        <span><i style="background:#2a6b0d"></i>&lt;8¢ low</span>
+        <span><i style="background:#7a4400"></i>8–14¢ medium</span>
+        <span><i style="background:#982020"></i>14–25¢ high</span>
+        <span><i style="background:#8a2c0e"></i>&gt;25¢ spike</span>
+      </div>
+      <div class="price-note" id="modal-price-note" style="margin-top:6px"></div>
+    </div>
   </div>
 
   <!-- Appliances -->
@@ -1261,238 +1385,560 @@ function renderStats(price, hourly) {
 }
 
 function renderPriceBreakdown(supplyPrice) {
-  var grid=document.getElementById('price-grid');
+  var grid = document.getElementById('price-grid');
   if (!grid) return;
-  if (supplyPrice===null){grid.style.display='none';return;}
-  grid.style.display='grid';
-  var m=_market||MARKET_DB[0];
-  var adder=getDeliveryAdder();
-  var allin=supplyPrice+adder;
-  var delivCharge=_isSummer?m.adder.delS:m.adder.delNS;
-  var taxEst=m.adder.tax;
-  var txCharge=m.adder.tx;
-  var r=getRisk(supplyPrice);
-  var ch2=nowCT();
-  var dow=new Date().getDay();
-  var isWeekday=(dow>=1&&dow<=5);
-  var capMonths=m.capMonths||[];
-  var isCapRisk=m.capRisk&&_isSummer&&isWeekday&&(ch2>=m.capHoursStart&&ch2<m.capHoursEnd)&&(capMonths.indexOf(new Date().getMonth())!==-1);
-  var capRiskRow=isCapRisk
-    ?'<div class="price-row-item" style="background:var(--spike-bg);border-radius:6px;padding:6px 8px;margin:4px 0;border:none"><span class="prl" style="color:var(--spike);font-weight:700">⚠ '+m.market+' Capacity Risk NOW<\/span><span class="prv" style="color:var(--spike)">Shed load!<\/span><\/div>'
-    :'';
-  var sumLabel=m.sumStart?'Jun '+m.sumStart[1]+'–'+(m.sumEnd[0]===9?'Sep':m.sumEnd[0]===10?'Oct':'?')+' '+m.sumEnd[1]:'N/A';
+  if (supplyPrice === null) { grid.style.display = 'none'; return; }
+  grid.style.display = 'block';
 
-  // Card 1: supply
-  var c1='<div class="price-card">'+
-    '<div class="pc-title">⚡ Supply Price <span class="badge" style="background:var(--blue-bg);color:var(--blue)">'+m.market+' · '+m.node.split('(')[0].trim()+'<\/span><\/div>'+
-    '<div class="price-row-item"><span class="prl">'+m.utility+' hourly supply<\/span><span class="prv">'+supplyPrice.toFixed(1)+'¢/kWh<\/span><\/div>'+
-    '<div class="price-row-item total-row"><span class="prl">Supply price<\/span><span class="prv" style="color:var(--blue)">'+supplyPrice.toFixed(1)+'¢<\/span><\/div>'+
-    '<div class="season-note">'+m.note+'<\/div>'+
+  var m          = _market || MARKET_DB[0];
+  var adder      = getDeliveryAdder();
+  var allin      = Math.round((supplyPrice + adder) * 10) / 10;
+  var delivCharge= _isSummer ? m.adder.delS : m.adder.delNS;
+  var taxEst     = m.adder.tax;
+  var txCharge   = m.adder.tx;
+  var r          = getRisk(supplyPrice);
+  var ch2        = nowCT();
+  var isWeekday  = (new Date().getDay() >= 1 && new Date().getDay() <= 5);
+  var capMonths  = m.capMonths || [];
+  var isCapRisk  = m.capRisk && _isSummer && isWeekday
+                   && (ch2 >= m.capHoursStart && ch2 < m.capHoursEnd)
+                   && capMonths.indexOf(new Date().getMonth()) !== -1;
+
+  var sumLabel = m.sumStart
+    ? 'Jun ' + m.sumStart[1] + '–' + (m.sumEnd[0]===9?'Sep':m.sumEnd[0]===10?'Oct':'?') + ' ' + m.sumEnd[1]
+    : null;
+
+  var seasonNote = '';
+  if (_isSummer && sumLabel)
+    seasonNote = '☀️ <strong>Summer rate (' + sumLabel + '):<\/strong> ' +
+      'Higher delivery fee applies.' +
+      (m.capRisk ? ' ' + m.market + ' capacity charge is set by your 5 highest peak-hour draws this summer.' : '') +
+      ' Reverts to non-summer rate after ' + sumLabel.split('–')[1] + '.';
+  else if (!_isSummer && sumLabel)
+    seasonNote = '❄️ <strong>Non-summer rate active.<\/strong> Lower delivery fee. Summer rate (' + sumLabel + ') kicks in Jun 1.';
+  else if (!m.sumStart)
+    seasonNote = 'ℹ️ ' + m.utility + ' has no seasonal delivery distinction.';
+
+  var html = '<div class="price-card">';
+
+  // ── Header: supply ¢ on left · all-in ¢ on right ──
+  html += '<div class="pc-header">';
+
+  // Left: supply price
+  html += '<div class="pc-left">' +
+    '<div class="pc-market-badge">' +
+      '<span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)">Supply<\/span>' +
+      '<span style="background:var(--blue-bg);color:var(--blue);font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">' + m.market + ' · ' + m.node.split('(')[0].trim() + '<\/span>' +
+    '<\/div>' +
+    '<div class="pc-supply-val" style="color:var(--blue)">' + supplyPrice.toFixed(1) + '¢<\/div>' +
+    '<div class="pc-supply-lbl">market supply price / kWh<\/div>' +
   '<\/div>';
 
-  // Card 2: all-in
-  var c2='<div class="price-card">'+
-    '<div class="pc-title">💳 All-In Rate <span class="badge" style="background:'+r.bg+';color:'+r.color+'">~'+allin.toFixed(1)+'¢/kWh<\/span><\/div>'+
-    capRiskRow+
-    '<div class="price-row-item"><span class="prl">Supply ('+m.market+')<\/span><span class="prv">'+supplyPrice.toFixed(1)+'¢<\/span><\/div>'+
-    (txCharge>0?'<div class="price-row-item"><span class="prl">Transmission<\/span><span class="prv">'+txCharge.toFixed(2)+'¢<\/span><\/div>':'')+
-    '<div class="price-row-item"><span class="prl">Delivery / distribution<\/span><span class="prv">'+delivCharge.toFixed(2)+'¢ '+(_isSummer?'(summer)':'(non-summer)')+'<\/span><\/div>'+
-    '<div class="price-row-item"><span class="prl">Taxes &amp; environmental<\/span><span class="prv">~'+taxEst.toFixed(2)+'¢<\/span><\/div>'+
-    '<div class="price-row-item total-row"><span class="prl">Total all-in<\/span><span class="prv" style="color:'+r.color+'">~'+allin.toFixed(1)+'¢/kWh<\/span><\/div>'+
-    '<div class="season-note">'+
-      (_isSummer
-        ?'☀️ <strong>Summer rate active ('+sumLabel+'):<\/strong> Higher delivery fee. '+
-          (m.capRisk?m.market+' capacity charge set by peak-hour draws. Prices auto-switch after '+sumLabel.split('–')[1]+'.':''  )
-        :(m.sumStart
-          ?'❄️ <strong>Non-summer rate active:<\/strong> Lower delivery fee. Switches to summer rate '+sumLabel+'.'
-          :'ℹ️ No seasonal delivery distinction for '+m.utility+'.')
-      )+
-    '<\/div>'+
+  // Divider
+  html += '<div class="pc-divider"><\/div>';
+
+  // Right: all-in
+  html += '<div class="pc-right">' +
+    '<span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)">All-In<\/span>' +
+    '<div class="pc-allin-val" style="color:' + r.color + '">~' + allin.toFixed(1) + '¢<\/div>' +
+    '<div class="pc-allin-lbl" style="color:' + r.color + '">' + r.label + '<\/div>' +
+    '<div class="pc-allin-lbl">what you actually pay / kWh<\/div>' +
   '<\/div>';
-  grid.innerHTML=c1+c2;
+
+  html += '<\/div>'; // end pc-header
+
+  // ── Capacity risk banner ──
+  if (isCapRisk) {
+    html += '<div class="pc-cap-row">' +
+      '<span>⚠ ' + m.market + ' Capacity Risk Window — ' + hLabel(m.capHoursStart) + '–' + hLabel(m.capHoursEnd) + '<\/span>' +
+      '<span>Shed load now!<\/span>' +
+    '<\/div>';
+  }
+
+  // ── Breakdown rows (grid layout) ──
+  html += '<div class="pc-breakdown">';
+
+  html += '<span class="pc-row-lbl">⚡ ' + m.utility + ' supply<\/span><span class="pc-row-val">' + supplyPrice.toFixed(1) + '¢<\/span>';
+  if (txCharge > 0)
+    html += '<span class="pc-row-lbl">↔ Transmission<\/span><span class="pc-row-val">+' + txCharge.toFixed(2) + '¢<\/span>';
+  html += '<span class="pc-row-lbl">🏗 Delivery' + (_isSummer?' <em style="font-size:10px;color:var(--amber)">(summer)<\/em>':'') + '<\/span><span class="pc-row-val">+' + delivCharge.toFixed(2) + '¢<\/span>';
+  html += '<span class="pc-row-lbl">🏛 Taxes &amp; fees<\/span><span class="pc-row-val">~+' + taxEst.toFixed(2) + '¢<\/span>';
+  html += '<span class="pc-row-lbl total">Total all-in<\/span><span class="pc-row-val total" style="color:' + r.color + '">~' + allin.toFixed(1) + '¢/kWh<\/span>';
+
+  // Season note inside grid
+  if (seasonNote)
+    html += '<div class="pc-season">' + seasonNote + '<\/div>';
+
+  html += '<\/div>'; // end pc-breakdown
+
+  // Source note
+  html += '<div class="pc-note">' + m.note + '<\/div>';
+
+  html += '<\/div>'; // end price-card
+
+  grid.innerHTML = html;
 }
 
 function getPOD(h){if(h<12)return 'morning';if(h<17)return 'afternoon';return 'evening';}
 
 // ══════════════════════════════════
-// LINE CHART (SVG)
+// CHART ENGINE v2
+// Inline labels · crosshair · history
 // ══════════════════════════════════
-function switchChart(mode,btn) {
-  _chartMode=mode;
-  document.querySelectorAll('.ctab').forEach(function(b){b.classList.remove('active');});
+
+function switchChart(mode, btn) {
+  _chartMode = mode;
+  document.querySelectorAll('.ctab').forEach(function(b){ b.classList.remove('active'); });
   btn.classList.add('active');
   renderChart();
 }
 
 function lineColor(p) {
-  if (p<0)  return '#185FA5';
-  if (p<8)  return '#2a6b0d';
-  if (p<14) return '#7a4400';
-  if (p<25) return '#982020';
+  if (p === null) return 'var(--border2)';
+  if (p < 0)  return '#185FA5';
+  if (p < 8)  return '#2a6b0d';
+  if (p < 14) return '#7a4400';
+  if (p < 25) return '#982020';
   return '#8a2c0e';
 }
 
-function renderChart() {
-  var container=document.getElementById('svg-container');
-  var yAxisEl=document.getElementById('y-axis');
-  var xlabels=document.getElementById('x-labels');
-  var noteEl=document.getElementById('price-note');
-  var ch=nowCT();
+function buildChartSVG(data, opt) {
+  opt = opt || {};
+  var container  = document.getElementById(opt.containerId || 'svg-container');
+  var yAxisEl    = document.getElementById(opt.yAxisId     || 'y-axis');
+  var xlabelsEl  = document.getElementById(opt.xlabelsId  || 'x-labels');
+  var noteEl     = document.getElementById(opt.noteId      || 'price-note');
+  if (!container) return;
 
-  var data=[];
-  var isHourly=(_chartMode==='hourly');
+  var isMobile   = window.innerWidth <= 640;
+  var isExpanded = !!opt.expanded;
+  var H          = opt.height || (isMobile ? 140 : 180);
+  var showLabels = opt.showLabels !== false;
+  var labelEvery = opt.labelEvery || 1;
+  var isHourly   = !!opt.isHourly;
 
-  if (isHourly) {
-    // Include ALL 24 hours — nulls will be drawn as gaps, not skipped
-    for (var hi=0; hi<24; hi++) {
-      var hd = _hourly[hi];
-      data.push({
-        h: hi,
-        p: (hd && hd.p !== null) ? hd.p : null,
-        label: hLabel(hi),
-        isCurr: hi === ch,
-        partial: hd ? hd.partial : false
-      });
-    }
-    noteEl.textContent='Hourly averages computed from ComEd 5-min feed. Each bar = one calendar hour (0–23). Current hour outlined. Hover dots for exact value.';
-    xlabels.innerHTML='<span>12 AM<\/span><span>6 AM<\/span><span>12 PM<\/span><span>6 PM<\/span><span>11 PM<\/span>';
-  } else {
-    var rev=_fiveMin.slice().reverse();
-    rev.forEach(function(d,i){
-      var p=parseFloat(d.price);
-      var dt=new Date(parseInt(d.millisUTC));
-      var lbl=dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:'America/Chicago'});
-      data.push({x:i,p:p,label:lbl,isRecent:i>=rev.length-12});
-    });
-    noteEl.textContent='Last 24 hours of 5-minute prices from ComEd API. Hover points for time + value.';
-    xlabels.innerHTML='<span>24h ago<\/span><span>18h ago<\/span><span>12h ago<\/span><span>6h ago<\/span><span>now<\/span>';
-  }
-
-  // Check we have at least some valid prices
-  var validPrices = data.filter(function(d){return d.p !== null;}).map(function(d){return d.p;});
+  var validPrices = data.filter(function(d){ return d.p !== null; }).map(function(d){ return d.p; });
   if (!validPrices.length) {
-    container.innerHTML='<div style="color:var(--text3);font-size:13px;padding:1rem">Waiting for data…<\/div>';
-    yAxisEl.innerHTML='';
+    container.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:1rem;text-align:center">No data for this period.<\/div>';
+    if (yAxisEl) yAxisEl.innerHTML = '';
     return;
   }
 
-  var isMobile = window.innerWidth <= 640;
-  var W=container.clientWidth||600, H=isMobile ? 140 : 180;
-  var PAD={top:14,right:12,bottom:8,left:4};
-  var chartW=W-PAD.left-PAD.right, chartH=H-PAD.top-PAD.bottom;
-  var n=data.length;
+  var W      = container.clientWidth || 600;
+  var PAD    = { top: isExpanded ? 22 : 18, right: 14, bottom: 8, left: 4 };
+  var chartW = W - PAD.left - PAD.right;
+  var chartH = H - PAD.top - PAD.bottom;
+  var n      = data.length;
+  var maxP   = Math.max.apply(null, validPrices.concat([8]));
+  var minP   = Math.min.apply(null, validPrices.concat([0]));
+  var range  = maxP - minP; if (range < 1) range = 1;
 
-  var maxP=Math.max.apply(null,validPrices.concat([8]));
-  var minP=Math.min.apply(null,validPrices.concat([0]));
-  var range=maxP-minP; if(range<1)range=1;
-
-  // For hourly: x position is always based on hour/23 so the axis is correctly scaled 0→23
-  // For 5-min: x position is index/n-1
-  function px(d, i) {
+  function pxFn(d, i) {
     if (isHourly) return PAD.left + (d.h / 23) * chartW;
-    return PAD.left + (i / (n>1?n-1:1)) * chartW;
+    return PAD.left + (i / Math.max(n - 1, 1)) * chartW;
   }
-  function py(p) { return PAD.top + chartH - (((p-minP)/range)*chartH); }
+  function pyFn(p) { return PAD.top + chartH - ((p - minP) / range) * chartH; }
 
-  // Y-axis ticks
-  var tickCount=5, yHTML='';
-  for(var ti=tickCount;ti>=0;ti--){
-    var tv=minP+(maxP-minP)*ti/tickCount;
-    yHTML+='<div class="y-tick">'+tv.toFixed(1)+'¢<\/div>';
+  // Y-axis
+  var tickCount = isMobile ? 4 : 5;
+  var yHTML = '';
+  for (var ti = tickCount; ti >= 0; ti--) {
+    yHTML += '<div class="y-tick">' + (minP + (maxP - minP) * ti / tickCount).toFixed(1) + 'c<\/div>';
   }
-  yAxisEl.innerHTML=yHTML;
+  if (yAxisEl) yAxisEl.innerHTML = yHTML;
 
-  // Build SVG
-  var svg='<svg width="'+W+'" height="'+H+'" class="svg-chart" xmlns="http://www.w3.org/2000/svg">';
+  var svg = '<svg width="' + W + '" height="' + H + '" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;display:block">';
 
-  // Grid lines
-  for(var gi=0;gi<=tickCount;gi++){
-    var gy=PAD.top+chartH-(gi/tickCount)*chartH;
-    svg+='<line x1="'+PAD.left+'" y1="'+gy.toFixed(1)+'" x2="'+(W-PAD.right)+'" y2="'+gy.toFixed(1)+'" stroke="var(--border)" stroke-width="'+(gi===0||gi===tickCount?1:0.5)+'"/>';
-  }
-
-  // Hour labels on x-axis for hourly mode (midnight, 6AM, noon, 6PM, 11PM)
-  if (isHourly) {
-    var xTickHours = [0, 6, 12, 18, 23];
-    xTickHours.forEach(function(ht){
-      var tx = PAD.left + (ht/23)*chartW;
-      svg += '<line x1="'+tx.toFixed(1)+'" y1="'+(PAD.top+chartH)+'" x2="'+tx.toFixed(1)+'" y2="'+(PAD.top+chartH+4)+'" stroke="var(--border2)" stroke-width="1"/>';
-    });
+  // Grid
+  for (var gi = 0; gi <= tickCount; gi++) {
+    var gy = PAD.top + chartH - (gi / tickCount) * chartH;
+    svg += '<line x1="' + PAD.left + '" y1="' + gy.toFixed(1) + '" x2="' + (W - PAD.right) + '" y2="' + gy.toFixed(1) + '" stroke="var(--border)" stroke-width="' + (gi === 0 || gi === tickCount ? 1 : 0.4) + '"/>';
   }
 
-  // Zero line (if negative prices exist)
-  if (minP<0) {
-    var zy=py(0);
-    svg+='<line x1="'+PAD.left+'" y1="'+zy.toFixed(1)+'" x2="'+(W-PAD.right)+'" y2="'+zy.toFixed(1)+'" stroke="var(--border2)" stroke-width="1.5" stroke-dasharray="4,3"/>';
+  // Zero line
+  if (minP < 0) {
+    svg += '<line x1="' + PAD.left + '" y1="' + pyFn(0).toFixed(1) + '" x2="' + (W - PAD.right) + '" y2="' + pyFn(0).toFixed(1) + '" stroke="var(--border2)" stroke-width="1.5" stroke-dasharray="4,3"/>';
   }
 
-  // Gradient area — only connect segments where both endpoints have data
-  var gradId='lcg'+Math.floor(Math.random()*99999);
-  var midP=validPrices[Math.floor(validPrices.length/2)];
-  var gradCol=lineColor(midP);
-  svg+='<defs><linearGradient id="'+gradId+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+gradCol+'" stop-opacity="0.15"/><stop offset="100%" stop-color="'+gradCol+'" stop-opacity="0.01"/><\/linearGradient><\/defs>';
+  // Gradient area
+  var gradId  = 'g' + Math.floor(Math.random() * 999999);
+  var midP    = validPrices[Math.floor(validPrices.length / 2)];
+  var gradCol = lineColor(midP);
+  var zeroY   = Math.min(pyFn(0), PAD.top + chartH);
 
-  // Build area path — skip gaps
-  var areaPath='';
-  var inSegment=false;
-  var zeroY=Math.min(py(0), PAD.top+chartH);
-  for (var ai=0; ai<n; ai++) {
+  svg += '<defs><linearGradient id="' + gradId + '" x1="0" y1="0" x2="0" y2="1">' +
+    '<stop offset="0%" stop-color="' + gradCol + '" stop-opacity="0.18"\/>' +
+    '<stop offset="100%" stop-color="' + gradCol + '" stop-opacity="0.01"\/>' +
+    '<\/linearGradient><\/defs>';
+
+  var areaPath = '', inSeg = false;
+  for (var ai = 0; ai < n; ai++) {
     if (data[ai].p !== null) {
-      var ax=px(data[ai],ai), ay=py(data[ai].p);
-      if (!inSegment) { areaPath+='M '+ax.toFixed(1)+' '+ay.toFixed(1); inSegment=true; }
-      else             { areaPath+=' L '+ax.toFixed(1)+' '+ay.toFixed(1); }
-    } else {
-      if (inSegment) { areaPath+=' L '+px(data[ai-1],ai-1).toFixed(1)+' '+zeroY.toFixed(1)+' Z '; inSegment=false; }
+      var ax = pxFn(data[ai], ai), ay = pyFn(data[ai].p);
+      if (!inSeg) { areaPath += 'M ' + ax.toFixed(1) + ' ' + ay.toFixed(1); inSeg = true; }
+      else         { areaPath += ' L ' + ax.toFixed(1) + ' ' + ay.toFixed(1); }
+    } else if (inSeg) {
+      areaPath += ' L ' + pxFn(data[ai-1], ai-1).toFixed(1) + ' ' + zeroY.toFixed(1) + ' Z ';
+      inSeg = false;
     }
   }
-  if (inSegment && n>0) {
-    var lastD=data[n-1];
-    // close area
-    var closePath=areaPath;
-    // find last valid
-    for(var ci=n-1;ci>=0;ci--){if(data[ci].p!==null){closePath+=' L '+px(data[ci],ci).toFixed(1)+' '+zeroY.toFixed(1)+' Z';break;}}
-    svg+='<path d="'+closePath+'" fill="url(#'+gradId+')" />';
+  if (inSeg) {
+    for (var ci = n-1; ci >= 0; ci--) {
+      if (data[ci].p !== null) { areaPath += ' L ' + pxFn(data[ci], ci).toFixed(1) + ' ' + zeroY.toFixed(1) + ' Z'; break; }
+    }
+    svg += '<path d="' + areaPath + '" fill="url(#' + gradId + ')"/>';
   }
 
-  // Line segments — color by price, skip null gaps
-  for(var li=0; li<n-1; li++){
+  // Lines
+  for (var li = 0; li < n - 1; li++) {
     if (data[li].p !== null && data[li+1].p !== null) {
-      var col=lineColor(data[li].p);
-      var op=(!isHourly && !data[li].isRecent)?0.4:1;
-      svg+='<line x1="'+px(data[li],li).toFixed(1)+'" y1="'+py(data[li].p).toFixed(1)+
-           '" x2="'+px(data[li+1],li+1).toFixed(1)+'" y2="'+py(data[li+1].p).toFixed(1)+
-           '" stroke="'+col+'" stroke-width="2" stroke-linecap="round" opacity="'+op+'"/>';
+      var lop = (opt.fadeOld && !data[li].isRecent) ? 0.4 : 1;
+      svg += '<line x1="' + pxFn(data[li], li).toFixed(1) + '" y1="' + pyFn(data[li].p).toFixed(1) +
+             '" x2="' + pxFn(data[li+1], li+1).toFixed(1) + '" y2="' + pyFn(data[li+1].p).toFixed(1) +
+             '" stroke="' + lineColor(data[li].p) + '" stroke-width="' + (isExpanded ? 2.5 : 2) + '" stroke-linecap="round" opacity="' + lop + '"/>';
     }
   }
 
-  // Dots + tooltips
-  var SKIP=isHourly?1:Math.max(1,Math.floor(n/48));
-  for(var di=0; di<n; di+=SKIP){
-    var d=data[di];
+  // Dots + inline labels
+  var SKIP = Math.max(1, Math.floor(n / (isMobile ? 24 : 48)));
+  for (var di = 0; di < n; di += SKIP) {
+    var d = data[di];
     if (d.p === null) continue;
-    var col2=lineColor(d.p);
-    var isCurr=isHourly && d.isCurr;
-    var r2=isCurr?5:3;
-    var sw=isCurr?2:1.5;
-    var op2=(!isHourly && !d.isRecent)?0.45:1;
-    var tip=d.label+': '+d.p.toFixed(1)+'¢'+(d.partial?' (in progress)':'');
-    svg+='<circle cx="'+px(d,di).toFixed(1)+'" cy="'+py(d.p).toFixed(1)+'" r="'+r2+
-         '" fill="'+col2+'" stroke="var(--surface)" stroke-width="'+sw+'" opacity="'+op2+
-         '" class="chart-tooltip-dot"><title>'+tip+'<\/title><\/circle>';
+    var dcol  = lineColor(d.p);
+    var dsize = d.isCurr ? 5 : (isExpanded ? 4 : 3);
+    svg += '<circle cx="' + pxFn(d, di).toFixed(1) + '" cy="' + pyFn(d.p).toFixed(1) + '" r="' + dsize + '" fill="' + dcol + '" stroke="var(--surface)" stroke-width="1.5"><title>' + d.label + ': ' + d.p.toFixed(1) + 'c' + (d.partial && d.isCurr ? ' (updating…)' : '') + '<\/title><\/circle>';
+
+    // Inline price label pill
+    if (showLabels && di % labelEvery === 0) {
+      var lx  = pxFn(d, di);
+      var ly  = pyFn(d.p);
+      var lby = ly - 13;
+      if (lby < PAD.top) lby = ly + 18;
+      var ltxt = d.p.toFixed(1) + 'c';
+      var ltw  = ltxt.length * 5.2 + 7;
+      svg += '<rect x="' + (lx - ltw/2).toFixed(1) + '" y="' + (lby - 8).toFixed(1) + '" width="' + ltw.toFixed(0) + '" height="11" rx="3" fill="' + dcol + '" opacity="0.92"\/>';
+      svg += '<text x="' + lx.toFixed(1) + '" y="' + lby.toFixed(1) + '" text-anchor="middle" font-size="' + (isMobile ? 7 : 8) + '" font-weight="700" fill="white" font-family="-apple-system,sans-serif">' + ltxt + '<\/text>';
+    }
   }
-  // Always show last valid dot prominently
-  for(var lvi=n-1;lvi>=0;lvi--){
-    if(data[lvi].p!==null){
-      var lc=lineColor(data[lvi].p);
-      svg+='<circle cx="'+px(data[lvi],lvi).toFixed(1)+'" cy="'+py(data[lvi].p).toFixed(1)+
-           '" r="5" fill="'+lc+'" stroke="var(--surface)" stroke-width="2">'+
-           '<title>'+data[lvi].label+': '+data[lvi].p.toFixed(1)+'¢'+(data[lvi].partial?' (in progress)':'')+'<\/title><\/circle>';
+
+  // Last dot always shown
+  for (var lvi = n-1; lvi >= 0; lvi--) {
+    if (data[lvi].p !== null) {
+      svg += '<circle cx="' + pxFn(data[lvi], lvi).toFixed(1) + '" cy="' + pyFn(data[lvi].p).toFixed(1) + '" r="5" fill="' + lineColor(data[lvi].p) + '" stroke="var(--surface)" stroke-width="2"><\/circle>';
       break;
     }
   }
 
-  svg+='<\/svg>';
-  container.innerHTML=svg;
+  // Crosshair hit area for expanded/interactive mode
+  // Store data globally instead of embedding in SVG attribute (avoids escaping bugs with large datasets)
+  if (opt.interactive) {
+    var chartId = opt.containerId || 'modal-svg-container';
+    window._chartDataStore = window._chartDataStore || {};
+    window._chartDataStore[chartId] = {
+      data:data, padL:PAD.left, chartW:chartW, padT:PAD.top,
+      chartH:chartH, minP:minP, range:range, W:W, n:n, isH:(isHourly?1:0)
+    };
+    svg += '<rect x="' + PAD.left + '" y="' + PAD.top + '" width="' + chartW + '" height="' + chartH +
+           '" fill="transparent" style="cursor:crosshair"' +
+           ' onmousemove="handleChartMove(event,\'' + chartId + '\')"' +
+           ' onmouseleave="hideChartCrosshair()"' +
+           ' ontouchmove="handleChartTouch(event,\'' + chartId + '\')"' +
+           ' ontouchend="scheduleHideCrosshair()"\/>';
+    svg += '<line id="chart-vline" x1="0" y1="' + PAD.top + '" x2="0" y2="' + (PAD.top+chartH) + '" stroke="var(--text2)" stroke-width="1" stroke-dasharray="3,3" opacity="0" pointer-events="none"\/>';
+  }
+
+  svg += '<\/svg>';
+  container.innerHTML = svg;
+}
+
+// Crosshair handlers — read data from global store (avoids SVG attribute escaping)
+var _chTimer = null;
+function handleChartMove(evt, chartId) {
+  var store = window._chartDataStore && window._chartDataStore[chartId];
+  if (!store) return;
+  var rect = evt.currentTarget.closest('svg').getBoundingClientRect();
+  var frac = (evt.clientX - rect.left - store.padL) / store.chartW;
+  showCHAt(frac, store, evt.currentTarget.closest('svg'));
+}
+function handleChartTouch(evt, chartId) {
+  evt.preventDefault();
+  var store = window._chartDataStore && window._chartDataStore[chartId];
+  if (!store) return;
+  var t    = evt.touches[0];
+  var rect = evt.currentTarget.closest('svg').getBoundingClientRect();
+  var frac = (t.clientX - rect.left - store.padL) / store.chartW;
+  showCHAt(frac, store, evt.currentTarget.closest('svg'));
+  if (_chTimer) clearTimeout(_chTimer);
+}
+function scheduleHideCrosshair() { _chTimer = setTimeout(hideChartCrosshair, 2500); }
+
+function showCHAt(frac, store, svgEl) {
+  frac = Math.max(0, Math.min(1, frac));
+  var data = store.data, n = store.n, isH = store.isH;
+  var idx  = isH ? Math.round(frac * 23) : Math.round(frac * (n - 1));
+  idx = Math.max(0, Math.min(isH ? 23 : n - 1, idx));
+  var d = data[idx];
+  if (!d || d.p === null) { hideChartCrosshair(); return; }
+
+  // X position of crosshair
+  var cx = store.padL + (isH ? (d.h / 23) * store.chartW : (idx / Math.max(n-1,1)) * store.chartW);
+  var cy = store.padT + store.chartH - ((d.p - store.minP) / store.range) * store.chartH;
+
+  // Move vertical line
+  var vl = svgEl ? svgEl.querySelector('#chart-vline') : null;
+  if (vl) { vl.setAttribute('x1', cx.toFixed(1)); vl.setAttribute('x2', cx.toFixed(1)); vl.setAttribute('opacity','0.7'); }
+
+  // Build tooltip content
+  var col   = lineColor(d.p);
+  var lines = [];
+
+  // Line 1: date/time label — always shown
+  lines.push('<div style="font-size:13px;font-weight:800;margin-bottom:4px">' + d.label + '<\/div>');
+
+  // Line 2: avg supply price
+  lines.push('<div style="display:flex;justify-content:space-between;gap:16px">' +
+    '<span style="opacity:.8">Avg supply<\/span>' +
+    '<span style="font-weight:800">' + d.p.toFixed(1) + '¢\/kWh<\/span>' +
+  '<\/div>');
+
+  // Line 3: all-in estimate
+  var adder  = getDeliveryAdder();
+  var allInP = Math.round((d.p + adder) * 10) / 10;
+  lines.push('<div style="display:flex;justify-content:space-between;gap:16px">' +
+    '<span style="opacity:.8">All-in est.<\/span>' +
+    '<span style="font-weight:800">~' + allInP + '¢\/kWh<\/span>' +
+  '<\/div>');
+
+  // Line 4: min/max if this is a daily-avg point
+  if (d.min !== undefined && d.max !== undefined && d.min !== null) {
+    lines.push('<div style="display:flex;justify-content:space-between;gap:16px;margin-top:3px;padding-top:3px;border-top:1px solid rgba(255,255,255,.3)">' +
+      '<span style="opacity:.8">Range<\/span>' +
+      '<span>' + d.min.toFixed(1) + '¢ – ' + d.max.toFixed(1) + '¢<\/span>' +
+    '<\/div>');
+  }
+
+  // Line 5: partial note
+  if (d.partial && d.isCurr) lines.push('<div style="font-size:10px;opacity:.7;margin-top:2px">⏱ Updating — current hour<\/div>');
+
+  var tip = document.getElementById('modal-crosshair-tip');
+  if (!tip) return;
+  tip.style.display    = 'block';
+  tip.style.left       = Math.min(Math.max(cx - 70, 0), store.W - 150) + 'px';
+  tip.style.top        = Math.max(4, cy - 90) + 'px';
+  tip.style.background = col;
+  tip.style.minWidth   = '140px';
+  tip.innerHTML        = lines.join('');
+}
+
+function hideChartCrosshair() {
+  var tip = document.getElementById('modal-crosshair-tip');
+  var vl  = document.getElementById('chart-vline');
+  if (tip) tip.style.display = 'none';
+  if (vl)  vl.setAttribute('opacity', '0');
+}
+
+// Main card chart
+function renderChart() {
+  var ch       = nowCT();
+  var isHourly = (_chartMode === 'hourly');
+  var isMobile = window.innerWidth <= 640;
+  var data     = [];
+
+  if (isHourly) {
+    for (var hi = 0; hi < 24; hi++) {
+      var hd = _hourly[hi];
+      data.push({ h:hi, p:(hd&&hd.p!==null)?hd.p:null, label:hLabel(hi), isCurr:hi===ch, partial:hd?hd.partial:false });
+    }
+    document.getElementById('x-labels').innerHTML = '<span>12 AM<\/span><span>6 AM<\/span><span>12 PM<\/span><span>6 PM<\/span><span>11 PM<\/span>';
+    document.getElementById('price-note').textContent = 'Hourly averages · today · all prices shown inline. Tap Expand for history.';
+  } else {
+    var rev = _fiveMin.slice().reverse();
+    rev.forEach(function(d, i) {
+      var dt = new Date(parseInt(d.millisUTC));
+      data.push({ x:i, p:parseFloat(d.price), label:dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:'America/Chicago'}), isRecent:i>=rev.length-12 });
+    });
+    document.getElementById('x-labels').innerHTML = '<span>24h ago<\/span><span>18h ago<\/span><span>12h ago<\/span><span>6h ago<\/span><span>now<\/span>';
+    document.getElementById('price-note').textContent = 'Last 24h · 5-min prices · key prices shown inline. Tap Expand for analysis.';
+  }
+
+  buildChartSVG(data, {
+    isHourly:   isHourly,
+    height:     isMobile ? 140 : 180,
+    showLabels: true,
+    labelEvery: isMobile ? (isHourly ? 4 : 12) : (isHourly ? 2 : 6),
+    fadeOld:    !isHourly,
+    interactive: false
+  });
+}
+
+// ── Chart Modal ──
+var _modalView = 'today';
+var _histCache = {};
+
+function openChartModal() {
+  document.getElementById('chart-modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  switchModalView('today', document.querySelector('#chart-modal-tabs .cmtab'));
+}
+function closeChartModal() {
+  document.getElementById('chart-modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeChartModalOutside(evt) {
+  if (evt.target === document.getElementById('chart-modal-overlay')) closeChartModal();
+}
+
+function switchModalView(view, btn) {
+  _modalView = view;
+  document.querySelectorAll('.cmtab').forEach(function(b){ b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  loadAndRenderModal(view);
+}
+
+function dateStrN(daysAgo) {
+  var now = new Date();
+  var d   = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysAgo);
+  var y   = d.toLocaleString('en-US',{timeZone:'America/Chicago',year:'numeric'});
+  var mo  = d.toLocaleString('en-US',{timeZone:'America/Chicago',month:'2-digit'});
+  var dy  = d.toLocaleString('en-US',{timeZone:'America/Chicago',day:'2-digit'});
+  return '' + y + mo + dy;
+}
+
+async function fetchDay(ymd) {
+  var cacheKey = 'hist_' + ymd;
+  var cached   = lsGet(cacheKey, null);
+  var todayYMD = dateStrN(0);
+  if (cached && ymd !== todayYMD) return cached;
+  try {
+    var res  = await fetch('https://hourlypricing.comed.com/api?type=5minutefeed&datestart=' + ymd + '0000&dateend=' + ymd + '2359');
+    var feed = await res.json();
+    var hourly = {};
+    feed.forEach(function(dp) {
+      var dt = new Date(parseInt(dp.millisUTC));
+      var lh = parseInt(dt.toLocaleString('en-US',{hour:'numeric',hour12:false,timeZone:'America/Chicago'}).replace('24','0'));
+      if (!hourly[lh]) hourly[lh] = {sum:0,n:0};
+      hourly[lh].sum += parseFloat(dp.price);
+      hourly[lh].n++;
+    });
+    var result = [];
+    for (var h=0; h<24; h++) result.push({ h:h, p:hourly[h] ? Math.round(hourly[h].sum/hourly[h].n*10)/10 : null });
+    if (ymd !== todayYMD && result.some(function(r){ return r.p!==null; })) lsSet(cacheKey, result);
+    return result;
+  } catch(e) { return []; }
+}
+
+function showModalLoad(msg) {
+  var lo = document.getElementById('chart-modal-loading');
+  if (lo) { lo.style.display='flex'; lo.querySelector('span').textContent = msg||'Loading…'; }
+  document.getElementById('modal-svg-container').innerHTML = '';
+  document.getElementById('chart-modal-stats').innerHTML   = '';
+}
+function hideModalLoad() {
+  var lo = document.getElementById('chart-modal-loading');
+  if (lo) lo.style.display = 'none';
+}
+
+async function loadAndRenderModal(view) {
+  showModalLoad('Fetching data…');
+  var m   = _market || MARKET_DB[0];
+  var sub = document.getElementById('chart-modal-sub');
+  if (sub) sub.textContent = (m.utility||'ComEd') + ' · ' + m.market + ' · ' + m.node.split('(')[0].trim();
+  try {
+    var data = [];
+    if (view === 'today') {
+      var ch = nowCT();
+      for (var hi=0; hi<24; hi++) { var hd=_hourly[hi]; data.push({h:hi,p:(hd&&hd.p!==null)?hd.p:null,label:hLabel(hi),isCurr:hi===ch,partial:hd?hd.partial:false}); }
+      hideModalLoad(); renderModalChart(data, 'today');
+    } else if (view === '5min') {
+      var rev = _fiveMin.slice().reverse();
+      rev.forEach(function(d,i){ var dt=new Date(parseInt(d.millisUTC)); data.push({x:i,p:parseFloat(d.price),label:dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:'America/Chicago'}),isRecent:i>=rev.length-12}); });
+      hideModalLoad(); renderModalChart(data, '5min');
+    } else {
+      var days = view==='week'?7:view==='month'?30:90;
+      for (var di=0; di<days; di++) {
+        var ymd  = dateStrN(days-1-di);
+        var lo2  = document.getElementById('chart-modal-loading');
+        if (lo2) lo2.querySelector('span').textContent = 'Fetching day ' + (di+1) + ' of ' + days + '…';
+        var dayD = await fetchDay(ymd);
+        var vp   = dayD.filter(function(x){return x.p!==null;});
+        var avg  = vp.length ? Math.round(vp.reduce(function(a,b){return a+b.p;},0)/vp.length*10)/10 : null;
+        var mn   = vp.length ? Math.min.apply(null,vp.map(function(x){return x.p;})) : null;
+        var mx   = vp.length ? Math.max.apply(null,vp.map(function(x){return x.p;})) : null;
+        var dd   = new Date(); dd.setDate(dd.getDate()-(days-1-di));
+        var dlbl = dd.toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'America/Chicago'});
+        data.push({x:di, p:avg, min:mn, max:mx, label:dlbl});
+      }
+      hideModalLoad(); renderModalChart(data, view);
+    }
+  } catch(e) { hideModalLoad(); }
+}
+
+function renderModalChart(data, view) {
+  var isHourly = view === 'today';
+  var is5min   = view === '5min';
+  var isMobile = window.innerWidth <= 640;
+  var n        = data.length;
+  var validP   = data.filter(function(d){return d.p!==null;}).map(function(d){return d.p;});
+  if (!validP.length) {
+    document.getElementById('modal-svg-container').innerHTML = '<div style="color:var(--text3);padding:2rem;text-align:center">No data available.<\/div>';
+    return;
+  }
+  var lev = 1;
+  if (n > 14) lev = Math.ceil(n/14);
+  if (is5min) lev = Math.ceil(n/10);
+
+  buildChartSVG(data, {
+    isHourly:    isHourly,
+    height:      isMobile ? 200 : 320,
+    showLabels:  !is5min,
+    labelEvery:  lev,
+    fadeOld:     is5min,
+    interactive: true,
+    expanded:    true,
+    containerId: 'modal-svg-container',
+    yAxisId:     'modal-y-axis',
+    xlabelsId:   'modal-x-labels',
+    noteId:      'modal-price-note'
+  });
+
+  // X labels
+  var xl = document.getElementById('modal-x-labels');
+  if (xl) {
+    if (isHourly)    xl.innerHTML = '<span>12 AM<\/span><span>6 AM<\/span><span>12 PM<\/span><span>6 PM<\/span><span>11 PM<\/span>';
+    else if (is5min) xl.innerHTML = '<span>24h ago<\/span><span>18h ago<\/span><span>12h ago<\/span><span>6h ago<\/span><span>now<\/span>';
+    else {
+      var step = Math.max(1, Math.floor(n/6));
+      var lh = '';
+      for (var li=0; li<n; li+=step) if (data[li]) lh += '<span>'+data[li].label+'<\/span>';
+      xl.innerHTML = lh;
+    }
+  }
+  var pn = document.getElementById('modal-price-note');
+  if (pn) {
+    if (isHourly)    pn.textContent = 'Today · hourly averages · all prices labelled inline.';
+    else if (is5min) pn.textContent = 'Last 24h · 5-min prices. Hover or tap the chart for exact value.';
+    else             pn.textContent = 'Each point = daily average supply price (all hourly readings averaged). Hover or tap any point to see date, average, all-in rate, and min/max range. Data cached locally.';
+  }
+
+  // Stats
+  var avg    = (validP.reduce(function(a,b){return a+b;},0)/validP.length).toFixed(1);
+  var mn2    = Math.min.apply(null,validP).toFixed(1);
+  var mx2    = Math.max.apply(null,validP).toFixed(1);
+  var adder  = getDeliveryAdder();
+  var avgAI  = (parseFloat(avg)+adder).toFixed(1);
+  var pct8   = Math.round(validP.filter(function(p){return p<8;}).length/validP.length*100);
+  var rAvg   = getRisk(parseFloat(avg));
+  var st     = document.getElementById('chart-modal-stats');
+  if (st) {
+    function sCard(e,l,v,c){ return '<div style="background:var(--surface2);border-radius:var(--radius);padding:10px 12px"><div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">'+e+' '+l+'<\/div><div style="font-size:17px;font-weight:800;color:'+(c||'var(--text)')+'">'+v+'<\/div><\/div>'; }
+    st.innerHTML =
+      sCard('📊','Avg supply',avg+'c',rAvg.color) +
+      sCard('💳','All-in avg','~'+avgAI+'c','var(--text)') +
+      sCard('⬇','Lowest',mn2+'c','var(--green)') +
+      sCard('⬆','Highest',mx2+'c','var(--red)') +
+      sCard('✅','Under 8c',pct8+'%','var(--green)') +
+      sCard('📅','Data pts',validP.length,'var(--text3)');
+  }
 }
 
 // ══════════════════════════════════
@@ -1915,7 +2361,7 @@ function processHourly(feed) {
   var result = [];
   for (var h=0; h<24; h++) {
     if (hourly[h] && hourly[h].n >= 1)
-      result.push({h:h, p:Math.round(hourly[h].sum/hourly[h].n*10)/10, partial:hourly[h].n<12});
+      result.push({h:h, p:Math.round(hourly[h].sum/hourly[h].n*10)/10, partial:false});
     else
       result.push({h:h, p:null});
   }
@@ -1968,9 +2414,11 @@ async function load() {
     _hourly  = processHourly(todayFeed);  // today-only — correct hourly chart
 
     // Patch current hour with the authoritative currenthouraverage value
+    // Only mark partial if we're still early in the hour (< 50 min elapsed)
     if (_price !== null) {
-      var ch = nowCT();
-      _hourly[ch] = {h:ch, p:_price, partial:true};
+      var ch     = nowCT();
+      var minNow = new Date().getMinutes();
+      _hourly[ch] = {h:ch, p:_price, partial: minNow < 50};
     }
 
     renderStats(_price, _hourly);
