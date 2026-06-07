@@ -437,6 +437,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 }
 
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes live-ring{0%,100%{opacity:.4}50%{opacity:.1}}
+.legend-fc{opacity:.7;font-style:italic}
 .svg-chart{overflow:visible}
 .lc-area{fill-opacity:.12}
 .lc-line{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -808,6 +810,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <span><i style="background:#7a4400"></i>8–14¢</span>
       <span><i style="background:#982020"></i>14–25¢</span>
       <span><i style="background:#8a2c0e"></i>&gt;25¢</span>
+      <span class="legend-fc"><i style="background:#b0b0b8;border:1px solid #b0b0b8"></i>Est. (future)</span>
     </div>
     <div class="price-note" id="price-note"></div>
   </div>
@@ -1889,42 +1892,71 @@ function buildChartSVG(data, opt) {
     svg += '<path d="' + areaPath + '" fill="url(#' + gradId + ')"/>';
   }
 
-  // Lines
+  // Lines — split into actual (colored) and forecast (gray dashed)
   for (var li = 0; li < n - 1; li++) {
     if (data[li].p !== null && data[li+1].p !== null) {
-      var lop = (opt.fadeOld && !data[li].isRecent) ? 0.4 : 1;
+      var isFC    = data[li].isForecast || data[li+1].isForecast;
+      var lop     = (opt.fadeOld && !data[li].isRecent) ? 0.4 : 1;
+      var lstroke = isFC ? '#b0b0b8' : lineColor(data[li].p);
+      var ldash   = isFC ? ' stroke-dasharray="5,4"' : '';
+      var lwid    = isExpanded ? 2.5 : 2;
       svg += '<line x1="' + pxFn(data[li], li).toFixed(1) + '" y1="' + pyFn(data[li].p).toFixed(1) +
              '" x2="' + pxFn(data[li+1], li+1).toFixed(1) + '" y2="' + pyFn(data[li+1].p).toFixed(1) +
-             '" stroke="' + lineColor(data[li].p) + '" stroke-width="' + (isExpanded ? 2.5 : 2) + '" stroke-linecap="round" opacity="' + lop + '"/>';
+             '" stroke="' + lstroke + '" stroke-width="' + lwid + '" stroke-linecap="round" opacity="' + lop + '"' + ldash + '\/>';
     }
   }
 
-  // Dots + inline labels
+  // Dots + inline labels — forecast = gray hollow, actual = colored solid
   var SKIP = Math.max(1, Math.floor(n / (isMobile ? 24 : 48)));
   for (var di = 0; di < n; di += SKIP) {
-    var d = data[di];
+    var d     = data[di];
     if (d.p === null) continue;
-    var dcol  = lineColor(d.p);
-    var dsize = d.isCurr ? 5 : (isExpanded ? 4 : 3);
-    svg += '<circle cx="' + pxFn(d, di).toFixed(1) + '" cy="' + pyFn(d.p).toFixed(1) + '" r="' + dsize + '" fill="' + dcol + '" stroke="var(--surface)" stroke-width="1.5"><title>' + d.label + ': ' + d.p.toFixed(1) + 'c' + (d.partial && d.isCurr ? ' (updating…)' : '') + '<\/title><\/circle>';
+    var isFC2  = !!d.isForecast;
+    var dcol   = isFC2 ? '#b0b0b8' : lineColor(d.p);
+    var dfill  = isFC2 ? 'var(--surface)' : dcol;
+    var dstroke= isFC2 ? '#b0b0b8' : 'var(--surface)';
+    var dsize  = d.isCurr ? 6 : (isExpanded ? 4 : 3);
+    var dsw    = d.isCurr ? 2.5 : 1.5;
+    var tipTxt = d.label + ': ' + d.p.toFixed(1) + 'c' +
+      (d.isForecast ? ' (est. based on yesterday)' : '') +
+      (d.partial && d.isCurr ? ' — updating' : '');
+
+    svg += '<circle cx="' + pxFn(d, di).toFixed(1) + '" cy="' + pyFn(d.p).toFixed(1) +
+           '" r="' + dsize + '" fill="' + dfill + '" stroke="' + dcol +
+           '" stroke-width="' + dsw + '"><title>' + tipTxt + '<\/title><\/circle>';
 
     // Inline price label pill
     if (showLabels && di % labelEvery === 0) {
-      var lx  = pxFn(d, di);
-      var ly  = pyFn(d.p);
-      var lby = ly - 13;
+      var lx   = pxFn(d, di);
+      var ly   = pyFn(d.p);
+      var lby  = ly - 13;
       if (lby < PAD.top) lby = ly + 18;
-      var ltxt = d.p.toFixed(1) + 'c';
+      var ltxt = d.p.toFixed(1) + (isFC2 ? '~' : 'c');
       var ltw  = ltxt.length * 5.2 + 7;
-      svg += '<rect x="' + (lx - ltw/2).toFixed(1) + '" y="' + (lby - 8).toFixed(1) + '" width="' + ltw.toFixed(0) + '" height="11" rx="3" fill="' + dcol + '" opacity="0.92"\/>';
-      svg += '<text x="' + lx.toFixed(1) + '" y="' + lby.toFixed(1) + '" text-anchor="middle" font-size="' + (isMobile ? 7 : 8) + '" font-weight="700" fill="white" font-family="-apple-system,sans-serif">' + ltxt + '<\/text>';
+      var lpil = isFC2 ? 0.55 : 0.92;
+      svg += '<rect x="' + (lx - ltw/2).toFixed(1) + '" y="' + (lby - 8).toFixed(1) +
+             '" width="' + ltw.toFixed(0) + '" height="11" rx="3" fill="' + dcol + '" opacity="' + lpil + '"\/>';
+      svg += '<text x="' + lx.toFixed(1) + '" y="' + lby.toFixed(1) +
+             '" text-anchor="middle" font-size="' + (isMobile ? 7 : 8) +
+             '" font-weight="700" fill="white" font-family="-apple-system,sans-serif">' + ltxt + '<\/text>';
     }
   }
 
-  // Last dot always shown
+  // Current-hour ring (pulse outline) — always show even if no dot in SKIP
+  var currD = data.find(function(d){ return d.isCurr && d.p !== null; });
+  if (currD) {
+    svg += '<circle cx="' + pxFn(currD, currD.h).toFixed(1) + '" cy="' + pyFn(currD.p).toFixed(1) +
+           '" r="7" fill="none" stroke="' + lineColor(currD.p) + '" stroke-width="2" opacity="0.4"' +
+           ' style="animation:live-ring 2s ease-in-out infinite"\/>';
+    svg += '<circle cx="' + pxFn(currD, currD.h).toFixed(1) + '" cy="' + pyFn(currD.p).toFixed(1) +
+           '" r="5" fill="' + lineColor(currD.p) + '" stroke="var(--surface)" stroke-width="2"><\/circle>';
+  }
+
+  // Last actual (non-forecast) dot always shown
   for (var lvi = n-1; lvi >= 0; lvi--) {
-    if (data[lvi].p !== null) {
-      svg += '<circle cx="' + pxFn(data[lvi], lvi).toFixed(1) + '" cy="' + pyFn(data[lvi].p).toFixed(1) + '" r="5" fill="' + lineColor(data[lvi].p) + '" stroke="var(--surface)" stroke-width="2"><\/circle>';
+    if (data[lvi].p !== null && !data[lvi].isForecast && !data[lvi].isCurr) {
+      svg += '<circle cx="' + pxFn(data[lvi], lvi).toFixed(1) + '" cy="' + pyFn(data[lvi].p).toFixed(1) +
+             '" r="5" fill="' + lineColor(data[lvi].p) + '" stroke="var(--surface)" stroke-width="2"><\/circle>';
       break;
     }
   }
@@ -1992,8 +2024,9 @@ function showCHAt(frac, store, svgEl) {
   var col   = lineColor(d.p);
   var lines = [];
 
-  // Line 1: date/time label — always shown
-  lines.push('<div style="font-size:13px;font-weight:800;margin-bottom:4px">' + d.label + '<\/div>');
+  // Line 1: time label + forecast badge
+  var fcBadge = d.isForecast ? ' <span style="font-size:10px;opacity:.8;font-weight:600">(estimated)<\/span>' : '';
+  lines.push('<div style="font-size:13px;font-weight:800;margin-bottom:4px">' + d.label + fcBadge + '<\/div>');
 
   // Line 2: avg supply price
   lines.push('<div style="display:flex;justify-content:space-between;gap:16px">' +
@@ -2046,27 +2079,56 @@ function renderChart() {
 
   if (isHourly) {
     for (var hi = 0; hi < 24; hi++) {
-      var hd = _hourly[hi];
-      data.push({ h:hi, p:(hd&&hd.p!==null)?hd.p:null, label:hLabel(hi), isCurr:hi===ch, partial:hd?hd.partial:false });
+      var hd       = _hourly[hi];
+      var isActual = hd && hd.p !== null;
+      var isFuture = hi > ch;
+      var isCurr   = hi === ch;
+
+      // For future hours: use yesterday's same hour as estimate
+      var forecastP = null;
+      if (isFuture && _yesterdayHourly.length && _yesterdayHourly[hi]) {
+        forecastP = _yesterdayHourly[hi].p;
+      }
+
+      data.push({
+        h:          hi,
+        p:          isActual ? hd.p : (isFuture ? forecastP : null),
+        label:      hLabel(hi),
+        isCurr:     isCurr,
+        isForecast: isFuture && !isActual,
+        partial:    hd ? hd.partial : false
+      });
     }
-    document.getElementById('x-labels').innerHTML = '<span>12 AM<\/span><span>6 AM<\/span><span>12 PM<\/span><span>6 PM<\/span><span>11 PM<\/span>';
-    document.getElementById('price-note').textContent = 'Hourly averages · today · all prices shown inline. Tap Expand for history.';
+    document.getElementById('x-labels').innerHTML =
+      '<span>12 AM<\/span><span>6 AM<\/span><span>12 PM<\/span><span>6 PM<\/span><span>11 PM<\/span>';
+    var hasForecasts = data.some(function(d){ return d.isForecast && d.p !== null; });
+    document.getElementById('price-note').textContent =
+      'Actual hourly averages (colored) · ' +
+      (hasForecasts ? 'Estimated future hours (gray) based on same hours yesterday · ' : '') +
+      'All prices shown inline. Tap Expand for history.';
   } else {
     var rev = _fiveMin.slice().reverse();
     rev.forEach(function(d, i) {
       var dt = new Date(parseInt(d.millisUTC));
-      data.push({ x:i, p:parseFloat(d.price), label:dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:'America/Chicago'}), isRecent:i>=rev.length-12 });
+      data.push({
+        x:        i,
+        p:        parseFloat(d.price),
+        label:    dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:'America/Chicago'}),
+        isRecent: i >= rev.length - 12
+      });
     });
-    document.getElementById('x-labels').innerHTML = '<span>24h ago<\/span><span>18h ago<\/span><span>12h ago<\/span><span>6h ago<\/span><span>now<\/span>';
-    document.getElementById('price-note').textContent = 'Last 24h · 5-min prices · key prices shown inline. Tap Expand for analysis.';
+    document.getElementById('x-labels').innerHTML =
+      '<span>24h ago<\/span><span>18h ago<\/span><span>12h ago<\/span><span>6h ago<\/span><span>now<\/span>';
+    document.getElementById('price-note').textContent =
+      'Last 24h · 5-min prices · key prices shown inline. Tap Expand for analysis.';
   }
 
   buildChartSVG(data, {
-    isHourly:   isHourly,
-    height:     isMobile ? 140 : 180,
-    showLabels: true,
-    labelEvery: isMobile ? (isHourly ? 4 : 12) : (isHourly ? 2 : 6),
-    fadeOld:    !isHourly,
+    isHourly:    isHourly,
+    height:      isMobile ? 140 : 180,
+    showLabels:  true,
+    labelEvery:  isMobile ? (isHourly ? 4 : 12) : (isHourly ? 2 : 6),
+    fadeOld:     !isHourly,
     interactive: false
   });
 }
@@ -2147,7 +2209,17 @@ async function loadAndRenderModal(view) {
     var data = [];
     if (view === 'today') {
       var ch = nowCT();
-      for (var hi=0; hi<24; hi++) { var hd=_hourly[hi]; data.push({h:hi,p:(hd&&hd.p!==null)?hd.p:null,label:hLabel(hi),isCurr:hi===ch,partial:hd?hd.partial:false}); }
+      for (var hi=0; hi<24; hi++) {
+        var hd = _hourly[hi];
+        var isActual  = hd && hd.p !== null;
+        var isFut     = hi > ch;
+        var fcP       = (isFut && _yesterdayHourly.length && _yesterdayHourly[hi]) ? _yesterdayHourly[hi].p : null;
+        data.push({
+          h:hi, p:isActual?hd.p:(isFut?fcP:null),
+          label:hLabel(hi), isCurr:hi===ch,
+          isForecast:isFut&&!isActual, partial:hd?hd.partial:false
+        });
+      }
       hideModalLoad(); renderModalChart(data, 'today');
     } else if (view === '5min') {
       var rev = _fiveMin.slice().reverse();
@@ -2617,10 +2689,46 @@ function finishWizard() {
 }
 
 // ══════════════════════════════════
-// DATA FETCHING
+// DAY-AHEAD FORECAST (gray bars)
+// ComEd's gray bars = PJM Day-Ahead LMP (internal API, not public).
+// Our implementation: yesterday's same-hour averages as a proxy estimate.
+// Clearly labelled "Est." so users understand it's not PJM's official DA price.
 // ══════════════════════════════════
+var _yesterdayHourly = []; // cache of yesterday's hourly averages
 
-// Build datestring in ComEd API format: YYYYMMDDhhmm (Chicago local time)
+async function fetchYesterdayHours() {
+  // Check localStorage cache first (yesterday is a complete day - never changes)
+  var yesterday = dateStrN(1); // YYYYMMDD for yesterday
+  var cacheKey  = 'hist_' + yesterday;
+  var cached    = lsGet(cacheKey, null);
+  if (cached && cached.length === 24) {
+    _yesterdayHourly = cached;
+    return;
+  }
+  try {
+    var url  = 'https://hourlypricing.comed.com/api?type=5minutefeed&datestart=' + yesterday + '0000&dateend=' + yesterday + '2359';
+    var res  = await fetch(url);
+    var feed = await res.json();
+    var hourly = {};
+    feed.forEach(function(dp) {
+      var dt = new Date(parseInt(dp.millisUTC));
+      var lh = parseInt(dt.toLocaleString('en-US',{hour:'numeric',hour12:false,timeZone:'America/Chicago'}).replace('24','0'));
+      if (!hourly[lh]) hourly[lh] = {sum:0, n:0};
+      hourly[lh].sum += parseFloat(dp.price);
+      hourly[lh].n++;
+    });
+    var result = [];
+    for (var h = 0; h < 24; h++) {
+      result.push({ h:h, p: hourly[h] ? Math.round(hourly[h].sum/hourly[h].n*10)/10 : null });
+    }
+    if (result.some(function(r){ return r.p !== null; })) {
+      lsSet(cacheKey, result);
+      _yesterdayHourly = result;
+    }
+  } catch(e) {
+    _yesterdayHourly = [];
+  }
+}
 function comEdDateStr(date) {
   // Extract Chicago local time components directly
   var parts = {};
@@ -2726,6 +2834,11 @@ async function load() {
     renderAppliances(_price);
     buildPanelHTML(); // refresh cost-per-hour with live price
     checkPriceAlerts(_price); // fire browser notifications if warranted
+
+    // Fetch yesterday's hours for forecast (gray bars) — non-blocking
+    fetchYesterdayHours().then(function() {
+      renderChart(); // re-render with forecast data added
+    });
 
   } catch(e) {
     document.getElementById('stats-row').innerHTML =
