@@ -68,8 +68,8 @@ controlled by the developer.
 
 ## Contact
 
-For questions about this privacy policy, open an issue at:
-`email resoluteacc@gmail.com`
+For questions about this privacy policy, send an email to:
+`resoluteacc@gmail.com`
 
 ---
 
